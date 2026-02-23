@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="notebook-card card p-4">
+            <h2 class="text-center mb-4 notebook-heading">Verify Your Email</h2>
+            <p class="text-center">Enter the 6‑digit code sent to your email.</p>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.code.label(class="notebook-label") }}
+                    {{ form.code(class="notebook-input form-control", placeholder="123456") }}
+                    {% for error in form.code.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}
+                </div>
+                <button type="submit" class="notebook-btn btn w-100">Verify</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('auth.resend_code', pending_id=pending_id) }}" class="notebook-link">Resend Code</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

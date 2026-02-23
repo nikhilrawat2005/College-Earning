@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.full_name }}'s Profile{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="notebook-card p-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <h1 class="notebook-heading">{{ profile_user.full_name }}</h1>
+                {% if current_user.id == profile_user.id %}
+                    <a href="{{ url_for('main.edit_profile') }}" class="notebook-btn">Edit Profile</a>
+                {% endif %}
+            </div>
+            <p class="notebook-lead">@{{ profile_user.username }}</p>
+            <hr class="notebook-divider">
+            <p><strong>College:</strong> {{ profile_user.college_name }}</p>
+            <p><strong>Year / Class / Section:</strong> {{ profile_user.year }} • {{ profile_user.class_name }} • {{ profile_user.section }}</p>
+            <p><strong>Phone:</strong> {{ profile_user.phone_number }}</p>
+            {% if profile_user.short_bio %}
+                <p><strong>Bio:</strong> {{ profile_user.short_bio }}</p>
+            {% endif %}
+            {% if profile_user.is_worker and profile_user.skills %}
+                <hr class="notebook-divider">
+                <p><strong>Skills offered:</strong></p>
+                <div>
+                    {% for skill in profile_user.skills.split(',') %}
+                        <span class="notebook-skill-tag">{{ skill.strip() }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <hr class="notebook-divider">
+            <p class="text-muted">Member since: {{ profile_user.created_at.strftime('%B %d, %Y') }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

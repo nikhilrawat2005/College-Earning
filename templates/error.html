@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <h1 class="display-1">⚠️</h1>
+        <h2 class="notebook-heading">{{ error }}</h2>
+        <a href="{{ url_for('main.landing') }}" class="notebook-btn btn mt-3">Go Home</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to College Earning{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row justify-content-center mt-4 mt-md-5">
+    <div class="col-lg-8 text-center">
+        <h1 class="notebook-heading display-3 mb-3">College Earning</h1>
+        <p class="notebook-lead lead mb-4">Earn from your skills inside your campus — connect, offer, and get paid.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('auth.signup') }}" class="notebook-btn-solid btn">Join Now</a>
+            <a href="{{ url_for('auth.login') }}" class="notebook-btn btn">Login</a>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="row mt-5 pt-4">
+    <div class="col-12 text-center mb-4">
+        <h2 class="notebook-heading">How It Works</h2>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="notebook-card card-color-1 p-4 text-center h-100">
+            <div class="feature-icon">📝</div>
+            <h3 class="feature-title">Create Profile</h3>
+            <p class="feature-text">Sign up and showcase your skills, experience, and availability.</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="notebook-card card-color-2 p-4 text-center h-100">
+            <div class="feature-icon">🎯</div>
+            <h3 class="feature-title">Offer Skills</h3>
+            <p class="feature-text">List what you can do — tutoring, design, coding, photography and more.</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="notebook-card card-color-3 p-4 text-center h-100">
+            <div class="feature-icon">🤝</div>
+            <h3 class="feature-title">Connect & Earn</h3>
+            <p class="feature-text">Get hired by fellow students, complete tasks, and earn money.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose Us Section -->
+<div class="row mt-4">
+    <div class="col-12 text-center mb-4">
+        <h2 class="notebook-heading">Why Choose Us</h2>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="feature-box card-color-4">
+            <div class="feature-icon">🎓</div>
+            <h3 class="feature-title">Verified Students</h3>
+            <p class="feature-text">All users are part of your campus community.</p>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="feature-box card-color-5">
+            <div class="feature-icon">💡</div>
+            <h3 class="feature-title">Skill-based</h3>
+            <p class="feature-text">Find exactly the talent you need, from tech to arts.</p>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="feature-box card-color-1">
+            <div class="feature-icon">🔒</div>
+            <h3 class="feature-title">Safe & Secure</h3>
+            <p class="feature-text">Your data and payments are protected.</p>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="feature-box card-color-2">
+            <div class="feature-icon">❤️</div>
+            <h3 class="feature-title">Community Driven</h3>
+            <p class="feature-text">Built by students, for students.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Community Stats Section -->
+<div class="row mt-5 justify-content-center">
+    <div class="col-12 text-center mb-4">
+        <h2 class="notebook-heading">Our Community</h2>
+    </div>
+    <div class="col-md-5 col-lg-4 mb-4">
+        <div class="stat-box">
+            <div class="stat-number">{{ total_users if total_users else '1,200+' }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+    </div>
+    <div class="col-md-5 col-lg-4 mb-4">
+        <div class="stat-box" style="background: var(--pastel-sky);">
+            <div class="stat-number">{{ total_workers if total_workers else '850+' }}</div>
+            <div class="stat-label">Active Workers</div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer Tagline -->
+<div class="row">
+    <div class="col-12">
+        <div class="landing-footer">
+            ⚡ Turn your campus skills into cash — start today!
+        </div>
+    </div>
+</div>
+{% endblock %}

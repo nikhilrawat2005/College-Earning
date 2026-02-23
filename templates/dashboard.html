@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="notebook-heading">Student Dashboard</h1>
+    </div>
+    <div class="col-auto">
+        <div class="notebook-stats-badge">
+            Total Users: {{ total_users }} | Workers: {{ total_workers }}
+        </div>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="GET" action="{{ url_for('main.dashboard') }}" class="notebook-search">
+            <div class="input-group">
+                <input type="text" name="q" class="notebook-input form-control" placeholder="Search by name, college..." value="{{ query }}">
+                <button type="submit" class="notebook-btn">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- User Cards -->
+<div class="row">
+    {% for user in users %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="notebook-card p-3 h-100">
+            <h3 class="notebook-heading h4">{{ user.full_name }}</h3>
+            <p class="mb-1"><strong>@{{ user.username }}</strong></p>
+            <p class="mb-1">{{ user.college_name }}</p>
+            <p class="mb-1">{{ user.year }} • {{ user.class_name }} • Section {{ user.section }}</p>
+            {% if user.is_worker and user.skills %}
+                <div class="mt-2">
+                    <span class="notebook-worker-badge">Offers Skills</span>
+                    <div class="mt-2">
+                        {% for skill in user.skills.split(',') %}
+                            <span class="notebook-skill-tag">{{ skill.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            <a href="{{ url_for('main.profile', username=user.username) }}" class="notebook-btn mt-3">View Profile</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="col">
+        <p class="notebook-lead">No users found.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
