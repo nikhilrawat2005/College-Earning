@@ -1,3 +1,4 @@
+# app/auth/routes.py
 from flask import render_template, redirect, url_for, flash, session, request, Blueprint
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
@@ -20,7 +21,7 @@ def append_user_to_csv(user):
     with open(file_path, mode='a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         if not file_exists:
-            writer.writerow(['username', 'email', 'full_name', 'college_name', 'year', 'class_name', 'section', 'phone_number', 'is_worker', 'created_at'])
+            writer.writerow(['username', 'email', 'full_name', 'college_name', 'year', 'class_name', 'section', 'phone_number', 'is_worker', 'skills', 'created_at'])
         writer.writerow([
             user.username,
             user.email,
@@ -31,6 +32,7 @@ def append_user_to_csv(user):
             user.section,
             user.phone_number,
             user.is_worker,
+            user.skills or '',
             user.created_at.strftime('%Y-%m-%d %H:%M:%S')
         ])
 

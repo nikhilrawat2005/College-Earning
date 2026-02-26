@@ -146,4 +146,6 @@ MAIL_PASSWORD=your-app-password
 python app.py
 
 Open in browser:
+
 http://127.0.0.1:5000
+>>>>>>> 25f7e4d (feat: Update user registration and profile forms with new fields and validation)

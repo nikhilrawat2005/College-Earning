@@ -1,3 +1,4 @@
+<!-- templates/edit_profile.html -->
 {% extends "base.html" %}
 {% block title %}Edit Profile{% endblock %}
 {% block content %}
@@ -5,54 +6,79 @@
     <div class="col-md-8">
         <div class="notebook-card p-4">
             <h2 class="notebook-heading mb-4">Edit Profile</h2>
-            <form method="POST" action="" novalidate>
+            <form method="POST" action="" novalidate id="editProfileForm">
                 {{ form.hidden_tag() }}
+                <!-- Full Name -->
                 <div class="mb-3">
                     {{ form.full_name.label(class="notebook-label") }}
                     {{ form.full_name(class="notebook-input form-control" + (" is-invalid" if form.full_name.errors else "")) }}
                     {% for error in form.full_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
                 </div>
+                <!-- College -->
                 <div class="mb-3">
                     {{ form.college_name.label(class="notebook-label") }}
-                    {{ form.college_name(class="notebook-input form-control" + (" is-invalid" if form.college_name.errors else "")) }}
+                    {{ form.college_name(class="notebook-input form-select" + (" is-invalid" if form.college_name.errors else "")) }}
                     {% for error in form.college_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
                 </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        {{ form.year.label(class="notebook-label") }}
-                        {{ form.year(class="notebook-input form-control" + (" is-invalid" if form.year.errors else "")) }}
-                        {% for error in form.year.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        {{ form.class_name.label(class="notebook-label") }}
-                        {{ form.class_name(class="notebook-input form-control" + (" is-invalid" if form.class_name.errors else "")) }}
-                        {% for error in form.class_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        {{ form.section.label(class="notebook-label") }}
-                        {{ form.section(class="notebook-input form-control" + (" is-invalid" if form.section.errors else "")) }}
-                        {% for error in form.section.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                    </div>
+                <!-- Year -->
+                <div class="mb-3">
+                    {{ form.year.label(class="notebook-label") }}
+                    {{ form.year(class="notebook-input form-select" + (" is-invalid" if form.year.errors else "")) }}
+                    {% for error in form.year.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
                 </div>
+                <!-- Branch -->
+                <div class="mb-3">
+                    {{ form.class_name.label(class="notebook-label") }}
+                    {{ form.class_name(class="notebook-input form-select" + (" is-invalid" if form.class_name.errors else ""), id="branchSelect") }}
+                    {% for error in form.class_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                </div>
+                <!-- Section -->
+                <div class="mb-3">
+                    {{ form.section.label(class="notebook-label") }}
+                    {{ form.section(class="notebook-input form-control" + (" is-invalid" if form.section.errors else ""), id="sectionInput") }}
+                    {% for error in form.section.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                    <small class="form-text text-muted">Section updates based on branch.</small>
+                </div>
+                <!-- Phone -->
                 <div class="mb-3">
                     {{ form.phone_number.label(class="notebook-label") }}
-                    {{ form.phone_number(class="notebook-input form-control" + (" is-invalid" if form.phone_number.errors else "")) }}
-                    {% for error in form.phone_number.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-3 border-black" style="border-radius: 20px 0 0 20px;">+91</span>
+                        {{ form.phone_number(class="notebook-input form-control" + (" is-invalid" if form.phone_number.errors else ""), placeholder="Enter 10-digit number") }}
+                    </div>
+                    {% for error in form.phone_number.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                 </div>
+                <!-- Short Bio -->
                 <div class="mb-3">
                     {{ form.short_bio.label(class="notebook-label") }}
                     {{ form.short_bio(class="notebook-input form-control" + (" is-invalid" if form.short_bio.errors else ""), rows=3) }}
                     {% for error in form.short_bio.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
                 </div>
+                <!-- Is Worker -->
                 <div class="mb-3 form-check">
-                    {{ form.is_worker(class="notebook-checkbox form-check-input") }}
+                    {{ form.is_worker(class="notebook-checkbox form-check-input", id="isWorker") }}
                     {{ form.is_worker.label(class="form-check-label notebook-label") }}
                 </div>
-                <div class="mb-3 skills-field" style="display: none;">
-                    {{ form.skills.label(class="notebook-label") }}
-                    {{ form.skills(class="notebook-input form-control" + (" is-invalid" if form.skills.errors else ""), rows=2) }}
-                    {% for error in form.skills.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                    <small class="form-text text-muted">Separate skills with commas.</small>
+                <!-- Skills section -->
+                <div class="mb-3 skills-section" style="display: none;">
+                    <label class="notebook-label">Skills (select multiple, add custom)</label>
+                    <select multiple class="form-select notebook-input mb-2" id="skillsSelect">
+                        <option value="Video Editing">Video Editing</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Photo Editing">Photo Editing</option>
+                        <option value="Videography">Videography</option>
+                        <option value="Coding">Coding</option>
+                        <option value="Academics">Academics</option>
+                        <option value="Mini Project">Mini Project</option>
+                    </select>
+                    <div class="input-group mb-2">
+                        <input type="text" class="notebook-input form-control" id="customSkill" placeholder="Add custom skill">
+                        <button class="btn btn-outline-secondary" type="button" id="addCustomSkill">Add</button>
+                    </div>
+                    <small class="form-text text-muted">Selected skills will appear below. Click 'Add' to include custom.</small>
+                    <div id="selectedSkillsTags" class="mt-2"></div>
+                    {{ form.skills(class="d-none", id="skillsHidden") }}
+                    {% for error in form.skills.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                 </div>
                 <button type="submit" class="notebook-btn">Save Changes</button>
                 <a href="{{ url_for('main.profile', username=current_user.username) }}" class="notebook-btn ms-2">Cancel</a>
@@ -60,26 +86,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const workerCheckbox = document.getElementById('is_worker');
-        const skillsField = document.querySelector('.skills-field');
-        const skillsInput = document.getElementById('skills');
-
-        function toggleSkills() {
-            if (workerCheckbox.checked) {
-                skillsField.style.display = 'block';
-                // Only require if user is worker (handled by form validation)
-            } else {
-                skillsField.style.display = 'none';
-                // Optionally clear skills when hiding
-                skillsInput.value = '';
-            }
-        }
-
-        workerCheckbox.addEventListener('change', toggleSkills);
-        toggleSkills();  // initial state based on current user's is_worker
-    });
-</script>
 {% endblock %}
