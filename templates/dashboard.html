@@ -28,14 +28,14 @@
 <div class="row">
     {% for user in users %}
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="notebook-card p-3 h-100">
+        <div class="notebook-card p-3 h-100 {% if user.is_worker %}card-color-5{% endif %}">
             <h3 class="notebook-heading h4">{{ user.full_name }}</h3>
             <p class="mb-1"><strong>@{{ user.username }}</strong></p>
             <p class="mb-1">{{ user.college_name }}</p>
             <p class="mb-1">{{ user.year }} • {{ user.class_name }} • Section {{ user.section }}</p>
             {% if user.is_worker and user.skills %}
                 <div class="mt-2">
-                    <span class="notebook-worker-badge">Offers Skills</span>
+                    <span class="notebook-worker-badge">Services Provided</span>
                     <div class="mt-2">
                         {% for skill in user.skills.split(',') %}
                             <span class="notebook-skill-tag">{{ skill.strip() }}</span>

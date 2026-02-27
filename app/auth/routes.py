@@ -56,6 +56,12 @@ def signup():
                 short_bio=form.short_bio.data,
                 is_worker=form.is_worker.data
             )
+            # Store skills in session (if worker)
+            if form.is_worker.data:
+                session['pending_skills'] = form.skills.data
+            else:
+                session['pending_skills'] = ''
+
             code = UserService.create_verification_code(pending.id)
             email_sent = EmailService.send_verification_email(pending.email, pending.username, code)
             if not email_sent:
@@ -80,7 +86,16 @@ def verify(pending_id):
     if form.validate_on_submit():
         user, message = UserService.verify_pending_user(pending_id, form.code.data)
         if user:
+            # Restore skills from session if any
+            if 'pending_skills' in session:
+                skills = session['pending_skills']
+                if skills:
+                    user.skills = skills
+                    db.session.commit()
+                session.pop('pending_skills', None)
+
             login_user(user)
+            # Export to CSV after skills are set
             append_user_to_csv(user)
             EmailService.send_welcome_email(user.email, user.username)
             session.pop('pending_id', None)

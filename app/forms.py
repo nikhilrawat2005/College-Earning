@@ -40,7 +40,7 @@ class SignupForm(FlaskForm):
         if branch == 'CSE':
             allowed = [str(i) for i in range(11, 29)]
         else:
-            allowed = ['A', 'B', 'C', 'D']
+            allowed = ['A', 'B', 'C']  # Removed 'D'
         if field.data not in allowed:
             raise ValidationError(f'Section must be one of: {", ".join(allowed)}')
 
@@ -88,7 +88,7 @@ class EditProfileForm(FlaskForm):
         if branch == 'CSE':
             allowed = [str(i) for i in range(11, 29)]
         else:
-            allowed = ['A', 'B', 'C', 'D']
+            allowed = ['A', 'B', 'C']  # Removed 'D'
         if field.data not in allowed:
             raise ValidationError(f'Section must be one of: {", ".join(allowed)}')
 

@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (branchSelect && sectionContainer && sectionInput) {
         const updateSection = () => {
             const branch = branchSelect.value;
+            // Capture the current value before replacing
+            const currentVal = sectionInput.value;
+
             // Create new select element
             const newSelect = document.createElement('select');
             newSelect.id = 'sectionInput';
@@ -50,13 +53,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     newSelect.appendChild(opt);
                 }
             } else {
-                // Options A, B, C, D
-                ['A', 'B', 'C', 'D'].forEach(letter => {
+                // Options A, B, C only (D removed)
+                ['A', 'B', 'C'].forEach(letter => {
                     const opt = document.createElement('option');
                     opt.value = letter;
                     opt.textContent = letter;
                     newSelect.appendChild(opt);
                 });
+            }
+
+            // Try to set the previously selected value
+            if (currentVal) {
+                // Check if the value exists in the new options
+                const optionExists = Array.from(newSelect.options).some(opt => opt.value === currentVal);
+                if (optionExists) {
+                    newSelect.value = currentVal;
+                }
             }
 
             // Replace old input/select with new one
@@ -65,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         branchSelect.addEventListener('change', updateSection);
-        // Initial call to set correct dropdown based on current branch
+        // Initial call to set correct dropdown based on current branch and saved value
         updateSection();
     }
 
