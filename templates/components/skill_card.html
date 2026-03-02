@@ -1,5 +1,7 @@
 <!-- templates/components/skill_card.html -->
-<div class="skill-card-wrapper">
+<a href="{{ url_for('main.service_users', skill_name=skill.name | replace(' ', '-') | lower) }}"
+   class="skill-card-wrapper"
+   style="text-decoration: none; color: inherit; display: block;">
     <div class="skill-card">
         <!-- Front -->
         <div class="skill-card-front">
@@ -17,4 +19,4 @@
             <p>{{ skill.description }}</p>
         </div>
     </div>
-</div>
+</a>

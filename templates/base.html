@@ -43,6 +43,50 @@
             opacity: 0;
             transition: opacity 0.5s ease;
         }
+        /* Profile dropdown avatar */
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid black;
+            cursor: pointer;
+        }
+        .dropdown-menu {
+            border: 3px solid black;
+            border-radius: 20px 5px 20px 5px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.1);
+            padding: 0.5rem 0;
+        }
+        .dropdown-item {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1rem;
+            padding: 0.5rem 1.5rem;
+        }
+        .dropdown-item:hover {
+            background-color: var(--pastel-yellow);
+        }
+        .dropdown-divider {
+            border-top: 2px dashed black;
+            margin: 0.5rem 0;
+        }
+        .profile-dropdown-header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--pastel-sky);
+            border-bottom: 2px solid black;
+        }
+        .profile-dropdown-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid black;
+            margin-right: 10px;
+        }
+        .profile-dropdown-header span {
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -60,16 +104,31 @@
                 {% if current_user.is_authenticated %}
                     <a href="{{ url_for('main.dashboard') }}" class="notebook-link">Discover</a>
                     <a href="{{ url_for('main.people') }}" class="notebook-link">People</a>
-                    <a href="{{ url_for('main.profile', username=current_user.username) }}" class="notebook-link">
-                        <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}" 
-                             class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover; margin-right: 5px;">
-                        {{ current_user.username }}
+                    <a href="{{ url_for('chat.index') }}" class="notebook-link">
+                        Messages
+                        {% if unread_messages_count > 0 %}
+                            <span class="badge bg-danger ms-1">{{ unread_messages_count }}</span>
+                        {% endif %}
                     </a>
-                    <a href="{{ url_for('chat.index') }}" class="notebook-link">Messages</a>
-                    <!-- Notification dropdown -->
-                    {% include 'notifications_dropdown.html' %}
-                    <a href="{{ url_for('auth.change_password') }}" class="notebook-link">Change Password</a>
-                    <a href="{{ url_for('auth.logout') }}" class="notebook-link">Logout</a>
+                    <!-- Profile Dropdown -->
+                    <div class="dropdown">
+                        <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}"
+                             class="profile-avatar dropdown-toggle"
+                             id="profileDropdown"
+                             data-bs-toggle="dropdown"
+                             aria-expanded="false"
+                             alt="Profile">
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li class="profile-dropdown-header">
+                                <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}" alt="">
+                                <span>{{ current_user.username }}</span>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.profile', username=current_user.username) }}">View Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}">Change Password</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                        </ul>
+                    </div>
                 {% else %}
                     <a href="{{ url_for('auth.login') }}" class="notebook-link">Login</a>
                     <a href="{{ url_for('auth.signup') }}" class="notebook-link">Sign Up</a>
@@ -103,8 +162,6 @@
     <script src="{{ url_for('static', filename='js/animation.js') }}"></script>
     <!-- Form enhancements JS -->
     <script src="{{ url_for('static', filename='js/forms.js') }}"></script>
-    <!-- Notifications JS -->
-    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
     <!-- Profile image crop JS -->
     <script src="{{ url_for('static', filename='js/profile_image_crop.js') }}"></script>
     <!-- Global JS -->

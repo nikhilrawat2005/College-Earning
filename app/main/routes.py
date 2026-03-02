@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
+import re
 
 from app.models import User
 from app.user_service import UserService
@@ -178,3 +179,29 @@ def upload_profile_image():
     db.session.commit()
 
     return jsonify({'filename': filename})
+
+
+# =====================================================
+# SERVICE USERS PAGE (NEW)
+# =====================================================
+@main_bp.route('/services/<path:skill_name>')
+@login_required
+def service_users(skill_name):
+    """Show all verified workers offering a specific skill."""
+    # Convert slug back to skill name (e.g., "video-editing" -> "Video Editing")
+    # Build a mapping from slug to actual skill name using ALL_SKILLS
+    slug_map = {skill.lower().replace(' ', '-'): skill for skill in ALL_SKILLS}
+    # Also handle slashes or other punctuation if needed
+    actual_skill = slug_map.get(skill_name)
+
+    if not actual_skill:
+        abort(404, description="Skill not found")
+
+    # Query verified workers with this skill
+    users = User.query.filter(
+        User.is_verified == True,
+        User.is_worker == True,
+        User.skills.ilike(f'%{actual_skill}%')
+    ).all()
+
+    return render_template('service_users.html', skill=actual_skill, users=users)

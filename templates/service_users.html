@@ -1,0 +1,48 @@
+<!-- templates/service_users.html -->
+{% extends "base.html" %}
+{% block title %}{{ skill }} Services{% endblock %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="notebook-heading">{{ skill }}</h1>
+        <p class="notebook-lead">Students offering this service</p>
+    </div>
+</div>
+
+<div class="row">
+    {% if users %}
+        {% for user in users %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="notebook-card p-3 h-100 card-color-5">
+                <div class="d-flex align-items-center mb-2">
+                    <img src="{{ url_for('static', filename='uploads/profile_images/' + (user.profile_image or 'default_profile.png')) }}"
+                         class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                    <h3 class="notebook-heading h4 mb-0">{{ user.full_name }}</h3>
+                </div>
+                <p class="mb-1"><strong>@{{ user.username }}</strong></p>
+                <p class="mb-1">{{ user.college_name }}</p>
+                <p class="mb-1">{{ user.year }} • {{ user.class_name }} • Section {{ user.section }}</p>
+                {% if user.skills %}
+                    <div class="mt-2">
+                        <div class="mt-2">
+                            {% for s in user.skills.split(',') %}
+                                <span class="notebook-skill-tag">{{ s.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                <a href="{{ url_for('main.profile', username=user.username) }}" class="notebook-btn mt-3">View Profile</a>
+                <a href="{{ url_for('chat.start_conversation', user_id=user.id) }}" class="notebook-btn mt-3 ms-2">Message</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="notebook-card p-5 text-center">
+                <p class="notebook-lead">No students offering this service yet.</p>
+                <p>Be the first to offer <strong>{{ skill }}</strong>!</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

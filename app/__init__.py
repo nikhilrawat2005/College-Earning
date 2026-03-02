@@ -65,6 +65,18 @@ def create_app(config_class=Config):
     app.register_blueprint(notifications_bp)
 
     # ===============================
+    # Context Processor for Unread Messages
+    # ===============================
+    @app.context_processor
+    def inject_unread_count():
+        from flask_login import current_user  # <-- IMPORT ADDED HERE
+        if current_user.is_authenticated:
+            from app.chat.service import ChatService
+            count = ChatService.get_unread_count(current_user.id)
+            return {'unread_messages_count': count}
+        return {'unread_messages_count': 0}
+
+    # ===============================
     # Jinja Filter
     # ===============================
     def skill_description_filter(skill):
