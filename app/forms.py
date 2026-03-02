@@ -1,10 +1,10 @@
-# app/forms.py
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
+from app.data.services_data import ALL_SKILLS
 
 class SignupForm(FlaskForm):
-    # Order: Full Name, College, Year, Branch, Section, then rest
     full_name = StringField('Full Name', validators=[DataRequired(), Length(max=100)])
     college_name = SelectField('College', choices=[('ABES Engineering College', 'ABES Engineering College')],
                                validators=[DataRequired()])
@@ -31,16 +31,21 @@ class SignupForm(FlaskForm):
     phone_number = StringField('Phone Number', validators=[DataRequired(), Length(max=20)])
     short_bio = TextAreaField('Short Bio', validators=[Length(max=500)])
     is_worker = BooleanField('I want to offer my skills')
-    # Hidden skills field will be populated by JS
     skills = TextAreaField('Skills (comma separated)', validators=[Optional(), Length(max=500)])
 
-    # Custom validation for section based on branch
+    # Profile image field
+    profile_image = FileField('Profile Picture (optional)', validators=[
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only!'),
+        FileSize(max_size=5 * 1024 * 1024)  # 5MB limit
+    ])
+
     def validate_section(form, field):
         branch = form.class_name.data
-        if branch == 'CSE':
+        # FIXED: Include all CSE variants
+        if branch in ['CSE', 'CSE (AIML)', 'CSE (DS)']:
             allowed = [str(i) for i in range(11, 29)]
         else:
-            allowed = ['A', 'B', 'C']  # Removed 'D'
+            allowed = ['A', 'B', 'C']
         if field.data not in allowed:
             raise ValidationError(f'Section must be one of: {", ".join(allowed)}')
 
@@ -83,12 +88,20 @@ class EditProfileForm(FlaskForm):
     is_worker = BooleanField('I offer my skills')
     skills = TextAreaField('Skills (comma separated)', validators=[Optional(), Length(max=500)])
 
+    # Profile image field
+    profile_image = FileField('Profile Picture', validators=[
+        Optional(),
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only!'),
+        FileSize(max_size=5 * 1024 * 1024)
+    ])
+
     def validate_section(form, field):
         branch = form.class_name.data
-        if branch == 'CSE':
+        # FIXED: Include all CSE variants
+        if branch in ['CSE', 'CSE (AIML)', 'CSE (DS)']:
             allowed = [str(i) for i in range(11, 29)]
         else:
-            allowed = ['A', 'B', 'C']  # Removed 'D'
+            allowed = ['A', 'B', 'C']
         if field.data not in allowed:
             raise ValidationError(f'Section must be one of: {", ".join(allowed)}')
 

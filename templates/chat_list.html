@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="notebook-heading mb-4">Messages</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        {% if conversations %}
+            {% for item in conversations %}
+                <div class="notebook-card p-3 mb-3 {% if item.unread_count > 0 %}card-color-5{% endif %}">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='uploads/profile_images/' + (item.other_user.profile_image or 'default_profile.png')) }}" 
+                             class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                        <div class="flex-grow-1">
+                            <h3 class="h5 mb-1">
+                                <a href="{{ url_for('main.profile', username=item.other_user.username) }}" class="notebook-link">
+                                    {{ item.other_user.full_name }}
+                                </a>
+                                {% if item.unread_count > 0 %}
+                                    <span class="badge bg-danger ms-2">{{ item.unread_count }} new</span>
+                                {% endif %}
+                            </h3>
+                            <p class="mb-0 text-muted">
+                                {% if item.last_message %}
+                                    {{ item.last_message.message_text|truncate(50) }}
+                                {% else %}
+                                    No messages yet
+                                {% endif %}
+                            </p>
+                        </div>
+                        <a href="{{ url_for('chat.conversation', conversation_id=item.conversation.id) }}" class="notebook-btn">Open</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="notebook-lead">No conversations yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

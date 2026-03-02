@@ -3,121 +3,163 @@
 {% block title %}Sign Up{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-10">
         <div class="notebook-card p-4">
-            <h2 class="notebook-heading mb-4">Sign Up</h2>
-            <form method="POST" action="" novalidate id="signupForm">
+            <h2 class="notebook-heading mb-4 text-center">Sign Up</h2>
+            <form method="POST" action="" enctype="multipart/form-data" novalidate id="signupForm">
                 {{ form.hidden_tag() }}
-                <!-- Full Name -->
-                <div class="mb-3">
-                    {{ form.full_name.label(class="notebook-label") }}
-                    {{ form.full_name(class="notebook-input form-control" + (" is-invalid" if form.full_name.errors else "")) }}
-                    {% for error in form.full_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                </div>
-                <!-- College -->
-                <div class="mb-3">
-                    {{ form.college_name.label(class="notebook-label") }}
-                    {{ form.college_name(class="notebook-input form-select" + (" is-invalid" if form.college_name.errors else "")) }}
-                    {% for error in form.college_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                </div>
-                <!-- Year -->
-                <div class="mb-3">
-                    {{ form.year.label(class="notebook-label") }}
-                    {{ form.year(class="notebook-input form-select" + (" is-invalid" if form.year.errors else "")) }}
-                    {% for error in form.year.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                </div>
-                <!-- Branch (class_name) -->
-                <div class="mb-3">
-                    {{ form.class_name.label(class="notebook-label") }}
-                    {{ form.class_name(class="notebook-input form-select" + (" is-invalid" if form.class_name.errors else ""), id="branchSelect") }}
-                    {% for error in form.class_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                </div>
-                <!-- Section (dynamic) -->
-                <div class="mb-3">
-                    {{ form.section.label(class="notebook-label") }}
-                    {{ form.section(class="notebook-input form-control" + (" is-invalid" if form.section.errors else ""), id="sectionInput") }}
-                    {% for error in form.section.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                    <small class="form-text text-muted">Section updates based on branch.</small>
-                </div>
-                <!-- Username -->
-                <div class="mb-3">
-                    {{ form.username.label(class="notebook-label") }}
-                    {{ form.username(class="notebook-input form-control" + (" is-invalid" if form.username.errors else "")) }}
-                    {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                </div>
-                <!-- Email -->
-                <div class="mb-3">
-                    {{ form.email.label(class="notebook-label") }}
-                    {{ form.email(class="notebook-input form-control" + (" is-invalid" if form.email.errors else "")) }}
-                    {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                </div>
-                <!-- Password with toggle -->
-                <div class="mb-3">
-                    {{ form.password.label(class="notebook-label") }}
-                    <div class="input-group">
-                        {{ form.password(class="notebook-input form-control" + (" is-invalid" if form.password.errors else ""), id="password") }}
-                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                
+                <!-- Two-column layout -->
+                <div class="row">
+                    <!-- Left column -->
+                    <div class="col-md-6">
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            {{ form.full_name.label(class="notebook-label") }}
+                            {{ form.full_name(class="notebook-input form-control" + (" is-invalid" if form.full_name.errors else ""), placeholder="Enter your full name") }}
+                            {% for error in form.full_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            {{ form.email.label(class="notebook-label") }}
+                            {{ form.email(class="notebook-input form-control" + (" is-invalid" if form.email.errors else ""), placeholder="Enter your college email") }}
+                            <small class="form-text text-muted">Use your college ID</small>
+                            {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Contact (Phone) -->
+                        <div class="mb-3">
+                            {{ form.phone_number.label(class="notebook-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-3 border-black" style="border-radius: 20px 0 0 20px;">+91</span>
+                                {{ form.phone_number(class="notebook-input form-control" + (" is-invalid" if form.phone_number.errors else ""), placeholder="Enter 10-digit number") }}
+                            </div>
+                            {% for error in form.phone_number.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- College -->
+                        <div class="mb-3">
+                            {{ form.college_name.label(class="notebook-label") }}
+                            {{ form.college_name(class="notebook-input form-select" + (" is-invalid" if form.college_name.errors else "")) }}
+                            {% for error in form.college_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            {{ form.username.label(class="notebook-label") }}
+                            {{ form.username(class="notebook-input form-control" + (" is-invalid" if form.username.errors else ""), placeholder="Choose a username") }}
+                            {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            {{ form.password.label(class="notebook-label") }}
+                            <div class="input-group">
+                                {{ form.password(class="notebook-input form-control" + (" is-invalid" if form.password.errors else ""), id="password", placeholder="Create a strong password") }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% for error in form.password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="mb-3">
+                            {{ form.confirm_password.label(class="notebook-label") }}
+                            <div class="input-group">
+                                {{ form.confirm_password(class="notebook-input form-control" + (" is-invalid" if form.confirm_password.errors else ""), id="confirmPassword", placeholder="Re-type your password") }}
+                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% for error in form.confirm_password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
                     </div>
-                    {% for error in form.password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-                </div>
-                <!-- Confirm Password with toggle -->
-                <div class="mb-3">
-                    {{ form.confirm_password.label(class="notebook-label") }}
-                    <div class="input-group">
-                        {{ form.confirm_password(class="notebook-input form-control" + (" is-invalid" if form.confirm_password.errors else ""), id="confirmPassword") }}
-                        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-                            <i class="fas fa-eye"></i>
-                        </button>
+
+                    <!-- Right column -->
+                    <div class="col-md-6">
+                        <!-- Profile Picture with preview -->
+                        <div class="mb-3 text-center">
+                            <label class="notebook-label">Profile Picture</label>
+                            <div class="d-flex flex-column align-items-center">
+                                <img id="profilePreview" src="{{ url_for('static', filename='uploads/profile_images/default_profile.png') }}" 
+                                     class="rounded-circle mb-2" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid black;">
+                                <div>
+                                    {{ form.profile_image(class="notebook-input form-control", id="profile_image", accept="image/*") }}
+                                </div>
+                                <small class="form-text text-muted">Upload a profile picture (optional)</small>
+                            </div>
+                        </div>
+
+                        <!-- Year -->
+                        <div class="mb-3">
+                            {{ form.year.label(class="notebook-label") }}
+                            {{ form.year(class="notebook-input form-select" + (" is-invalid" if form.year.errors else "")) }}
+                            {% for error in form.year.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Branch (class_name) -->
+                        <div class="mb-3">
+                            {{ form.class_name.label(class="notebook-label") }}
+                            {{ form.class_name(class="notebook-input form-select" + (" is-invalid" if form.class_name.errors else ""), id="branchSelect") }}
+                            {% for error in form.class_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Section -->
+                        <div class="mb-3">
+                            {{ form.section.label(class="notebook-label") }}
+                            {{ form.section(class="notebook-input form-control" + (" is-invalid" if form.section.errors else ""), id="sectionInput") }}
+                            <small class="form-text text-muted">Section updates based on branch.</small>
+                            {% for error in form.section.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="mb-3">
+                            {{ form.short_bio.label(class="notebook-label") }}
+                            {{ form.short_bio(class="notebook-input form-control" + (" is-invalid" if form.short_bio.errors else ""), rows=3, placeholder="Write something about yourself...") }}
+                            {% for error in form.short_bio.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Is Worker checkbox -->
+                        <div class="mb-3 form-check">
+                            {{ form.is_worker(class="notebook-checkbox form-check-input", id="isWorker") }}
+                            {{ form.is_worker.label(class="form-check-label notebook-label") }}
+                        </div>
                     </div>
-                    {% for error in form.confirm_password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                 </div>
-                <!-- Phone with +91 prefix -->
-                <div class="mb-3">
-                    {{ form.phone_number.label(class="notebook-label") }}
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-3 border-black" style="border-radius: 20px 0 0 20px;">+91</span>
-                        {{ form.phone_number(class="notebook-input form-control" + (" is-invalid" if form.phone_number.errors else ""), placeholder="Enter 10-digit number") }}
+
+                <!-- Skills section (categorized checkboxes) -->
+                <div class="row skills-section" style="display: none;">
+                    <div class="col-12">
+                        <hr class="notebook-divider">
+                        <label class="notebook-label mb-3">Select your skills:</label>
+                        <div class="row">
+                            {% for category, data in skill_categories.items() %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <h6 class="fw-bold">{{ category }}</h6>
+                                    {% for skill in data.skills %}
+                                        <div class="form-check">
+                                            <input class="form-check-input skill-checkbox" type="checkbox" name="skill_checkbox" value="{{ skill.name }}" id="skill_{{ skill.name|replace(' ', '_') }}">
+                                            <label class="form-check-label" for="skill_{{ skill.name|replace(' ', '_') }}">
+                                                {{ skill.name }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <!-- Hidden field to store selected skills as comma-separated -->
+                        {{ form.skills(class="d-none", id="skillsHidden") }}
+                        {% for error in form.skills.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                     </div>
-                    {% for error in form.phone_number.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                 </div>
-                <!-- Short Bio -->
-                <div class="mb-3">
-                    {{ form.short_bio.label(class="notebook-label") }}
-                    {{ form.short_bio(class="notebook-input form-control" + (" is-invalid" if form.short_bio.errors else ""), rows=3) }}
-                    {% for error in form.short_bio.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="notebook-btn">Sign Up</button>
                 </div>
-                <!-- Is Worker checkbox -->
-                <div class="mb-3 form-check">
-                    {{ form.is_worker(class="notebook-checkbox form-check-input", id="isWorker") }}
-                    {{ form.is_worker.label(class="form-check-label notebook-label") }}
-                </div>
-                <!-- Skills section (hidden by default, shown if worker) -->
-                <div class="mb-3 skills-section" style="display: none;">
-                    <label class="notebook-label">Skills (select multiple, add custom)</label>
-                    <select multiple class="form-select notebook-input mb-2" id="skillsSelect">
-                        <option value="Video Editing">Video Editing</option>
-                        <option value="Photography">Photography</option>
-                        <option value="Photo Editing">Photo Editing</option>
-                        <option value="Videography">Videography</option>
-                        <option value="Coding">Coding</option>
-                        <option value="Academics">Academics</option>
-                        <option value="Mini Project">Mini Project</option>
-                    </select>
-                    <div class="input-group mb-2">
-                        <input type="text" class="notebook-input form-control" id="customSkill" placeholder="Add custom skill">
-                        <button class="btn btn-outline-secondary" type="button" id="addCustomSkill">Add</button>
-                    </div>
-                    <small class="form-text text-muted">Selected skills will appear below. Click 'Add' to include custom.</small>
-                    <div id="selectedSkillsTags" class="mt-2"></div>
-                    <!-- Hidden field for actual skills textarea -->
-                    {{ form.skills(class="d-none", id="skillsHidden") }}
-                    {% for error in form.skills.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-                </div>
-                <button type="submit" class="notebook-btn">Sign Up</button>
             </form>
-            <p class="mt-3">Already have an account? <a href="{{ url_for('auth.login') }}" class="notebook-link">Login</a></p>
+            <p class="mt-3 text-center">Already have an account? <a href="{{ url_for('auth.login') }}" class="notebook-link">Login</a></p>
         </div>
     </div>
 </div>

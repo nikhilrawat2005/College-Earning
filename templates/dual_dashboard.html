@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Discover Skills{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="notebook-heading mb-4">Discover Skills</h1>
+    </div>
+</div>
+
+<!-- Dual mode toggle -->
+<div class="row mb-4">
+    <div class="col-md-6 mx-auto">
+        <div class="dashboard-toggle">
+            <button class="toggle-btn active" id="services-tab">SERVICES</button>
+            <button class="toggle-btn" id="tutorials-tab">TUTORIALS</button>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic content container -->
+<div id="dashboard-content" class="row">
+    <!-- Initially loaded via JavaScript -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const servicesTab = document.getElementById('services-tab');
+        const tutorialsTab = document.getElementById('tutorials-tab');
+        const contentDiv = document.getElementById('dashboard-content');
+
+        function loadContent(mode) {
+            const url = mode === 'services' ? '/dashboard/services' : '/dashboard/tutorials';
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load');
+                    return response.text();
+                })
+                .then(html => {
+                    contentDiv.innerHTML = html;
+                    // Update active tab
+                    if (mode === 'services') {
+                        servicesTab.classList.add('active');
+                        tutorialsTab.classList.remove('active');
+                    } else {
+                        tutorialsTab.classList.add('active');
+                        servicesTab.classList.remove('active');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    contentDiv.innerHTML = '<div class="alert alert-danger">Failed to load content.</div>';
+                });
+        }
+
+        servicesTab.addEventListener('click', () => loadContent('services'));
+        tutorialsTab.addEventListener('click', () => loadContent('tutorials'));
+
+        // Load services by default
+        loadContent('services');
+    });
+</script>
+{% endblock %}

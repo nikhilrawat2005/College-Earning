@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}People{% endblock %}
 {% block content %}
 <div class="row mb-4">
     <div class="col">
-        <h1 class="notebook-heading">Student Dashboard</h1>
+        <h1 class="notebook-heading">Student Directory</h1>
     </div>
     <div class="col-auto">
         <div class="notebook-stats-badge">
@@ -15,7 +15,7 @@
 <!-- Search -->
 <div class="row mb-4">
     <div class="col-md-6">
-        <form method="GET" action="{{ url_for('main.dashboard') }}" class="notebook-search">
+        <form method="GET" action="{{ url_for('main.people') }}" class="notebook-search">
             <div class="input-group">
                 <input type="text" name="q" class="notebook-input form-control" placeholder="Search by name, college..." value="{{ query }}">
                 <button type="submit" class="notebook-btn">Search</button>
@@ -29,7 +29,11 @@
     {% for user in users %}
     <div class="col-md-6 col-lg-4 mb-4">
         <div class="notebook-card p-3 h-100 {% if user.is_worker %}card-color-5{% endif %}">
-            <h3 class="notebook-heading h4">{{ user.full_name }}</h3>
+            <div class="d-flex align-items-center mb-2">
+                <img src="{{ url_for('static', filename='uploads/profile_images/' + (user.profile_image or 'default_profile.png')) }}" 
+                     class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                <h3 class="notebook-heading h4 mb-0">{{ user.full_name }}</h3>
+            </div>
             <p class="mb-1"><strong>@{{ user.username }}</strong></p>
             <p class="mb-1">{{ user.college_name }}</p>
             <p class="mb-1">{{ user.year }} • {{ user.class_name }} • Section {{ user.section }}</p>

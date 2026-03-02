@@ -1,0 +1,20 @@
+<!-- templates/components/skill_card.html -->
+<div class="skill-card-wrapper">
+    <div class="skill-card">
+        <!-- Front -->
+        <div class="skill-card-front">
+            <h4 class="skill-name">{{ skill.name }}</h4>
+            <div class="skill-image">
+                <img src="{{ url_for('static', filename='images/skills/' + skill.image) }}"
+                     alt="{{ skill.name }}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/skills/default.jpg') }}'">
+            </div>
+            <p class="worker-count">{{ skill.count }} Active Workers</p>
+        </div>
+        <!-- Back -->
+        <div class="skill-card-back">
+            <p>{{ skill.description }}</p>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,10 @@
 import random
+import os
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from PIL import Image
+from flask import current_app
 from app.extensions import db
 from app.models import User, PendingUser, EmailVerification
 
@@ -19,31 +23,48 @@ class UserService:
 
     @staticmethod
     def create_pending_user(username, email, password, full_name, college_name,
-                            year, class_name, section, phone_number, short_bio, is_worker):
-        try:
-            assigned_id = UserService.generate_assigned_id(username)
-            password_hash = generate_password_hash(password)
+                            year, class_name, section, phone_number, short_bio, is_worker,
+                            commit=True):
+        assigned_id = UserService.generate_assigned_id(username)
+        password_hash = generate_password_hash(password)
 
-            pending = PendingUser(
-                username=username,
-                email=email,
-                password_hash=password_hash,
-                full_name=full_name,
-                college_name=college_name,
-                year=year,
-                class_name=class_name,
-                section=section,
-                phone_number=phone_number,
-                short_bio=short_bio,
-                is_worker=is_worker,
-                assigned_id=assigned_id
-            )
-            db.session.add(pending)
+        pending = PendingUser(
+            username=username,
+            email=email,
+            password_hash=password_hash,
+            full_name=full_name,
+            college_name=college_name,
+            year=year,
+            class_name=class_name,
+            section=section,
+            phone_number=phone_number,
+            short_bio=short_bio,
+            is_worker=is_worker,
+            assigned_id=assigned_id
+        )
+        db.session.add(pending)
+        if commit:
             db.session.commit()
-            return pending
-        except Exception as e:
-            db.session.rollback()
-            raise e
+        return pending
+
+    @staticmethod
+    def create_verification_code(pending_user_id, commit=True):
+        code = f'{random.randint(0, 999999):06d}'
+        expires_at = datetime.utcnow() + timedelta(minutes=10)
+
+        # Delete any existing codes for this pending user
+        EmailVerification.query.filter_by(pending_user_id=pending_user_id).delete()
+
+        verification = EmailVerification(
+            pending_user_id=pending_user_id,
+            code=code,
+            expires_at=expires_at,
+            last_sent_at=datetime.utcnow()
+        )
+        db.session.add(verification)
+        if commit:
+            db.session.commit()
+        return code
 
     @staticmethod
     def verify_pending_user(pending_id, code):
@@ -90,23 +111,6 @@ class UserService:
         return None
 
     @staticmethod
-    def create_verification_code(pending_user_id):
-        code = f'{random.randint(0, 999999):06d}'
-        expires_at = datetime.utcnow() + timedelta(minutes=10)
-
-        EmailVerification.query.filter_by(pending_user_id=pending_user_id).delete()
-
-        verification = EmailVerification(
-            pending_user_id=pending_user_id,
-            code=code,
-            expires_at=expires_at,
-            last_sent_at=datetime.utcnow()
-        )
-        db.session.add(verification)
-        db.session.commit()
-        return code
-
-    @staticmethod
     def get_user_by_id(user_id):
         return User.query.get(user_id)
 
@@ -126,7 +130,6 @@ class UserService:
 
     @staticmethod
     def update_user_profile(user, data):
-        """Update allowed fields for a user."""
         user.full_name = data.get('full_name', user.full_name)
         user.college_name = data.get('college_name', user.college_name)
         user.year = data.get('year', user.year)
@@ -135,7 +138,6 @@ class UserService:
         user.phone_number = data.get('phone_number', user.phone_number)
         user.short_bio = data.get('short_bio', user.short_bio)
         user.is_worker = data.get('is_worker', user.is_worker)
-        # Only update skills if provided, otherwise keep existing
         if 'skills' in data:
             user.skills = data.get('skills')
         db.session.commit()
@@ -152,3 +154,36 @@ class UserService:
     @staticmethod
     def get_worker_count():
         return User.query.filter_by(is_verified=True, is_worker=True).count()
+
+    # Profile image helpers
+    @staticmethod
+    def save_profile_image(file, user_id, crop_data=None):
+        """Save uploaded image, apply crop if provided, return filename."""
+        if not file:
+            return None
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"user_{user_id}_{secure_filename(file.filename)}"
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        if crop_data:
+            # Crop using Pillow
+            im = Image.open(filepath)
+            x, y, scale = crop_data['x'], crop_data['y'], crop_data['scale']
+            # Simple crop: assume square crop from center
+            width, height = im.size
+            left = max(0, x)
+            top = max(0, y)
+            right = min(width, left + scale)
+            bottom = min(height, top + scale)
+            im = im.crop((left, top, right, bottom))
+            im.save(filepath)
+
+        return filename
+
+    @staticmethod
+    def delete_old_profile_image(user):
+        if user.profile_image:
+            path = os.path.join(current_app.config['UPLOAD_FOLDER'], user.profile_image)
+            if os.path.exists(path):
+                os.remove(path)

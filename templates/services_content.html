@@ -1,0 +1,117 @@
+<!-- templates/services_content.html -->
+{% set categorized = skill_service.get_categorized_skills() %}
+{% set pastel_classes = [
+    'category-pastel-1', 'category-pastel-2', 'category-pastel-3',
+    'category-pastel-4', 'category-pastel-5', 'category-pastel-6',
+    'category-pastel-7'
+] %}
+
+<div class="services-discover">
+
+    <!-- ROW 1: first category (5 cards) -->
+    {% with category = categorized[0] %}
+    <div class="category-container {{ pastel_classes[0] }}">
+        <h2 class="category-heading">{{ category.name }}</h2>
+        <div class="skills-grid grid-5">
+            {% for skill in category.skills %}
+                {% include 'components/skill_card.html' %}
+            {% endfor %}
+        </div>
+        <hr class="category-divider">
+        <p class="category-description">{{ category.description }}</p>
+    </div>
+    {% endwith %}
+
+    <!-- ROW 2: second category (5 cards) -->
+    {% with category = categorized[1] %}
+    <div class="category-container {{ pastel_classes[1] }}">
+        <h2 class="category-heading">{{ category.name }}</h2>
+        <div class="skills-grid grid-5">
+            {% for skill in category.skills %}
+                {% include 'components/skill_card.html' %}
+            {% endfor %}
+        </div>
+        <hr class="category-divider">
+        <p class="category-description">{{ category.description }}</p>
+    </div>
+    {% endwith %}
+
+    <!-- ROWS 3 & 4: two categories side‑by‑side (each 2×2 grid) -->
+    <div class="category-row-double">
+        {% with category = categorized[2] %}
+        <div class="category-col">
+            <div class="category-container {{ pastel_classes[2] }}">
+                <h2 class="category-heading">{{ category.name }}</h2>
+                <div class="skills-grid grid-2x2">
+                    {% for skill in category.skills %}
+                        {% include 'components/skill_card.html' %}
+                    {% endfor %}
+                </div>
+                <hr class="category-divider">
+                <p class="category-description">{{ category.description }}</p>
+            </div>
+        </div>
+        {% endwith %}
+        {% with category = categorized[3] %}
+        <div class="category-col">
+            <div class="category-container {{ pastel_classes[3] }}">
+                <h2 class="category-heading">{{ category.name }}</h2>
+                <div class="skills-grid grid-2x2">
+                    {% for skill in category.skills %}
+                        {% include 'components/skill_card.html' %}
+                    {% endfor %}
+                </div>
+                <hr class="category-divider">
+                <p class="category-description">{{ category.description }}</p>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+
+    <!-- BOTTOM ROW: three containers (2 cards, 1 card, 2 cards) – now horizontal for left/right -->
+    <div class="category-row-triple">
+        {% with category = categorized[4] %}
+        <div class="category-col">
+            <div class="category-container {{ pastel_classes[4] }}">
+                <h2 class="category-heading">{{ category.name }}</h2>
+                <div class="skills-grid grid-2-horizontal">   <!-- changed from grid-2 to grid-2-horizontal -->
+                    {% for skill in category.skills %}
+                        {% include 'components/skill_card.html' %}
+                    {% endfor %}
+                </div>
+                <hr class="category-divider">
+                <p class="category-description">{{ category.description }}</p>
+            </div>
+        </div>
+        {% endwith %}
+        {% with category = categorized[5] %}
+        <div class="category-col">
+            <div class="category-container {{ pastel_classes[5] }}">
+                <h2 class="category-heading">{{ category.name }}</h2>
+                <div class="skills-grid grid-1">              <!-- unchanged: single card -->
+                    {% for skill in category.skills %}
+                        {% include 'components/skill_card.html' %}
+                    {% endfor %}
+                </div>
+                <hr class="category-divider">
+                <p class="category-description">{{ category.description }}</p>
+            </div>
+        </div>
+        {% endwith %}
+        {% with category = categorized[6] %}
+        <div class="category-col">
+            <div class="category-container {{ pastel_classes[6] }}">
+                <h2 class="category-heading">{{ category.name }}</h2>
+                <div class="skills-grid grid-2-horizontal">   <!-- changed from grid-2 to grid-2-horizontal -->
+                    {% for skill in category.skills %}
+                        {% include 'components/skill_card.html' %}
+                    {% endfor %}
+                </div>
+                <hr class="category-divider">
+                <p class="category-description">{{ category.description }}</p>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+
+</div>

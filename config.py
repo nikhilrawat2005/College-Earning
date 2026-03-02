@@ -14,4 +14,12 @@ class Config:
     MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', MAIL_USERNAME)  # fallback
+
+    # Rate limiter storage (memory for development, Redis for production)
+    RATELIMIT_STORAGE_URI = os.getenv('RATELIMIT_STORAGE_URI', 'memory://')
+
+    # Upload folders
+    UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads', 'profile_images')
+    TEMP_UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads', 'temp')
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB

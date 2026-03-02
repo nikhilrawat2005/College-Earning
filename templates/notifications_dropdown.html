@@ -1,0 +1,15 @@
+<!-- templates/notifications_dropdown.html -->
+<li class="nav-item dropdown">
+    <a class="nav-link notebook-link" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge" class="badge bg-danger" style="display: none;">0</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+        <li><h6 class="dropdown-header">Notifications</h6></li>
+        <div id="notification-list">
+            <li><span class="dropdown-item-text">Loading...</span></li>
+        </div>
+        <li><hr class="dropdown-divider"></li>
+        <li><button class="dropdown-item text-center" id="mark-all-read">Mark all as read</button></li>
+    </ul>
+</li>

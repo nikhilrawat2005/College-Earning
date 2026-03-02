@@ -9,17 +9,29 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     full_name = db.Column(db.String(100), nullable=False)
     college_name = db.Column(db.String(100), nullable=False)
-    year = db.Column(db.String(20), nullable=False)          # e.g., "1st Year"
-    class_name = db.Column(db.String(20), nullable=False)    # e.g., "Computer Science"
-    section = db.Column(db.String(10), nullable=False)       # e.g., "A"
+    year = db.Column(db.String(20), nullable=False)
+    class_name = db.Column(db.String(20), nullable=False)
+    section = db.Column(db.String(10), nullable=False)
     phone_number = db.Column(db.String(20), nullable=False)
     short_bio = db.Column(db.Text)
-    skills = db.Column(db.Text)                               # comma‑separated list
+    skills = db.Column(db.Text)
     is_worker = db.Column(db.Boolean, default=False)
     is_verified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     assigned_id = db.Column(db.String(50), unique=True)
 
+    # Profile image fields
+    profile_image = db.Column(db.String(255), nullable=True)  # filename
+    profile_crop_x = db.Column(db.Float, nullable=True)
+    profile_crop_y = db.Column(db.Float, nullable=True)
+    profile_crop_scale = db.Column(db.Float, nullable=True)
+
+    __table_args__ = (
+        db.Index('idx_user_username', 'username'),
+        db.Index('idx_user_email', 'email'),
+        db.Index('idx_user_full_name', 'full_name'),
+        db.Index('idx_user_college_name', 'college_name'),
+    )
 
 class PendingUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,7 +67,6 @@ class PendingUser(db.Model):
             is_verified=True
         )
 
-
 class EmailVerification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pending_user_id = db.Column(db.Integer, db.ForeignKey('pending_user.id'), nullable=False)
@@ -64,6 +75,10 @@ class EmailVerification(db.Model):
     attempts = db.Column(db.Integer, default=0)
     last_sent_at = db.Column(db.DateTime, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index('idx_emailverification_pending_user_id', 'pending_user_id'),
+    )
 
     def is_expired(self):
         return datetime.utcnow() > self.expires_at

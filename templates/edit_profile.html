@@ -6,7 +6,7 @@
     <div class="col-md-8">
         <div class="notebook-card p-4">
             <h2 class="notebook-heading mb-4">Edit Profile</h2>
-            <form method="POST" action="" novalidate id="editProfileForm">
+            <form method="POST" action="" enctype="multipart/form-data" novalidate id="editProfileForm">
                 {{ form.hidden_tag() }}
                 <!-- Full Name -->
                 <div class="mb-3">
@@ -54,6 +54,17 @@
                     {{ form.short_bio(class="notebook-input form-control" + (" is-invalid" if form.short_bio.errors else ""), rows=3) }}
                     {% for error in form.short_bio.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
                 </div>
+                <!-- Profile Picture -->
+                <div class="mb-3">
+                    {{ form.profile_image.label(class="notebook-label") }}
+                    {% if current_user.profile_image %}
+                        <div class="mb-2">
+                            <img src="{{ url_for('static', filename='uploads/profile_images/' + current_user.profile_image) }}" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                        </div>
+                    {% endif %}
+                    {{ form.profile_image(class="notebook-input form-control") }}
+                    <small class="form-text text-muted">Upload new image (jpg, png, gif, max 5MB)</small>
+                </div>
                 <!-- Is Worker -->
                 <div class="mb-3 form-check">
                     {{ form.is_worker(class="notebook-checkbox form-check-input", id="isWorker") }}
@@ -61,21 +72,13 @@
                 </div>
                 <!-- Skills section -->
                 <div class="mb-3 skills-section" style="display: none;">
-                    <label class="notebook-label">Skills (select multiple, add custom)</label>
+                    <label class="notebook-label">Skills (select multiple)</label>
                     <select multiple class="form-select notebook-input mb-2" id="skillsSelect">
-                        <option value="Video Editing">Video Editing</option>
-                        <option value="Photography">Photography</option>
-                        <option value="Photo Editing">Photo Editing</option>
-                        <option value="Videography">Videography</option>
-                        <option value="Coding">Coding</option>
-                        <option value="Academics">Academics</option>
-                        <option value="Mini Project">Mini Project</option>
+                        {% for skill in skills_list %}
+                            <option value="{{ skill }}" {% if skill in (current_user.skills or '').split(', ') %}selected{% endif %}>{{ skill }}</option>
+                        {% endfor %}
                     </select>
-                    <div class="input-group mb-2">
-                        <input type="text" class="notebook-input form-control" id="customSkill" placeholder="Add custom skill">
-                        <button class="btn btn-outline-secondary" type="button" id="addCustomSkill">Add</button>
-                    </div>
-                    <small class="form-text text-muted">Selected skills will appear below. Click 'Add' to include custom.</small>
+                    <small class="form-text text-muted">Selected skills will appear below.</small>
                     <div id="selectedSkillsTags" class="mt-2"></div>
                     {{ form.skills(class="d-none", id="skillsHidden") }}
                     {% for error in form.skills.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}

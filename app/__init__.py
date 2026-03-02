@@ -1,33 +1,80 @@
 from flask import Flask, render_template
 from config import Config
-from app.extensions import db, mail, login_manager, limiter
+from app.extensions import db, mail, login_manager, limiter, migrate, csrf
+from app.services.skill_service import SkillService
+import os
+
 
 def create_app(config_class=Config):
-    app = Flask(__name__, template_folder='../templates', static_folder='../static')
+    app = Flask(
+        __name__,
+        template_folder='../templates',
+        static_folder='../static'
+    )
+
     app.config.from_object(config_class)
 
-    # Initialize extensions
+    # ===============================
+    # Initialize Extensions
+    # ===============================
     db.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login'
+    # Pass storage_uri from config to limiter
+    limiter.storage_uri = app.config['RATELIMIT_STORAGE_URI']
     limiter.init_app(app)
+    migrate.init_app(app, db)
+    csrf.init_app(app)
 
-    # Import models to ensure they are registered with SQLAlchemy
+    login_manager.login_view = 'auth.login'
+
+    # ===============================
+    # Create upload folders if missing
+    # ===============================
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    os.makedirs(app.config['TEMP_UPLOAD_FOLDER'], exist_ok=True)
+
+    # ===============================
+    # Import Models (REGISTER TABLES)
+    # ===============================
     from app import models
+    from app.chat import models as chat_models
+    from app.notifications import models as notif_models
 
-    # User loader
+    # ===============================
+    # SAFE USER LOADER (DB RESET SAFE)
+    # ===============================
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(models.User, int(user_id))
+        try:
+            return db.session.get(models.User, int(user_id))
+        except Exception:
+            return None
 
-    # Register blueprints
+    # ===============================
+    # Register Blueprints
+    # ===============================
     from app.auth.routes import auth_bp
     from app.main.routes import main_bp
+    from app.chat import chat_bp
+    from app.notifications import notifications_bp
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(chat_bp)
+    app.register_blueprint(notifications_bp)
 
-    # Error handlers
+    # ===============================
+    # Jinja Filter
+    # ===============================
+    def skill_description_filter(skill):
+        return SkillService.get_description(skill)
+
+    app.jinja_env.filters['skill_description'] = skill_description_filter
+
+    # ===============================
+    # Error Handlers
+    # ===============================
     @app.errorhandler(404)
     def page_not_found(e):
         return render_template('error.html', error='Page not found'), 404
@@ -36,7 +83,9 @@ def create_app(config_class=Config):
     def internal_server_error(e):
         return render_template('error.html', error='Internal server error'), 500
 
-    # Create tables (only if they don't exist)
+    # ===============================
+    # ✅ AUTO CREATE DATABASE TABLES (development only)
+    # ===============================
     with app.app_context():
         db.create_all()
 

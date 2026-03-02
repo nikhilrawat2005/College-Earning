@@ -1,3 +1,4 @@
+<!-- templates/profile.html -->
 {% extends "base.html" %}
 {% block title %}{{ profile_user.full_name }}'s Profile{% endblock %}
 {% block content %}
@@ -6,9 +7,14 @@
         <div class="notebook-card p-4">
             <div class="d-flex justify-content-between align-items-start">
                 <h1 class="notebook-heading">{{ profile_user.full_name }}</h1>
-                {% if current_user.id == profile_user.id %}
-                    <a href="{{ url_for('main.edit_profile') }}" class="notebook-btn">Edit Profile</a>
-                {% endif %}
+                <div>
+                    {% if current_user.is_authenticated and current_user.id != profile_user.id %}
+                        <a href="{{ url_for('chat.start_conversation', user_id=profile_user.id) }}" class="notebook-btn me-2">Message</a>
+                    {% endif %}
+                    {% if current_user.id == profile_user.id %}
+                        <a href="{{ url_for('main.edit_profile') }}" class="notebook-btn">Edit Profile</a>
+                    {% endif %}
+                </div>
             </div>
             <p class="notebook-lead">@{{ profile_user.username }}</p>
             <hr class="notebook-divider">
