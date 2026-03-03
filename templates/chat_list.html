@@ -12,7 +12,7 @@
             {% for item in conversations %}
                 <div class="notebook-card p-3 mb-3 {% if item.unread_count > 0 %}card-color-5{% endif %}">
                     <div class="d-flex align-items-center">
-                        <img src="{{ url_for('static', filename='uploads/profile_images/' + (item.other_user.profile_image or 'default_profile.png')) }}" 
+                        <img src="{{ url_for('static', filename='uploads/profile_images/' + (item.other_user.profile_image or 'default_profile.png')) }}"
                              class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                         <div class="flex-grow-1">
                             <h3 class="h5 mb-1">

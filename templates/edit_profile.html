@@ -57,13 +57,13 @@
                 <!-- Profile Picture -->
                 <div class="mb-3">
                     {{ form.profile_image.label(class="notebook-label") }}
-                    {% if current_user.profile_image %}
-                        <div class="mb-2">
-                            <img src="{{ url_for('static', filename='uploads/profile_images/' + current_user.profile_image) }}" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-                        </div>
-                    {% endif %}
-                    {{ form.profile_image(class="notebook-input form-control") }}
-                    <small class="form-text text-muted">Upload new image (jpg, png, gif, max 5MB)</small>
+                    <div class="mb-2">
+                        <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}"
+                             class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;" id="profilePreview">
+                    </div>
+                    {{ form.profile_image(class="notebook-input form-control", accept="image/*") }}
+                    {% for error in form.profile_image.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    <small class="form-text text-muted">Upload new image (jpg, png, gif, max 10MB)</small>
                 </div>
                 <!-- Is Worker -->
                 <div class="mb-3 form-check">

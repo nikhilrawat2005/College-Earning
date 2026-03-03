@@ -1,7 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, flash, redirect, request, jsonify
 from config import Config
 from app.extensions import db, mail, login_manager, limiter, migrate, csrf
 from app.services.skill_service import SkillService
+from werkzeug.exceptions import RequestEntityTooLarge
 import os
 
 
@@ -20,7 +21,6 @@ def create_app(config_class=Config):
     db.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
-    # Pass storage_uri from config to limiter
     limiter.storage_uri = app.config['RATELIMIT_STORAGE_URI']
     limiter.init_app(app)
     migrate.init_app(app, db)
@@ -69,7 +69,7 @@ def create_app(config_class=Config):
     # ===============================
     @app.context_processor
     def inject_unread_count():
-        from flask_login import current_user  # <-- IMPORT ADDED HERE
+        from flask_login import current_user
         if current_user.is_authenticated:
             from app.chat.service import ChatService
             count = ChatService.get_unread_count(current_user.id)
@@ -94,6 +94,14 @@ def create_app(config_class=Config):
     @app.errorhandler(500)
     def internal_server_error(e):
         return render_template('error.html', error='Internal server error'), 500
+
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_large_file(e):
+        # Check if request is AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': 'File too large. Maximum size is 10MB.'}), 413
+        flash("Profile image must be under 10MB.", "danger")
+        return redirect(request.url)
 
     # ===============================
     # ✅ AUTO CREATE DATABASE TABLES (development only)

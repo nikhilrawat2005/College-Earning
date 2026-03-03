@@ -2,7 +2,6 @@ import random
 import os
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 from PIL import Image
 from flask import current_app
 from app.extensions import db
@@ -71,6 +70,12 @@ class UserService:
         pending = PendingUser.query.get(pending_id)
         if not pending:
             return None, 'Invalid session'
+
+        # Check if pending user itself has expired (older than 15 minutes)
+        if datetime.utcnow() - pending.created_at > timedelta(minutes=15):
+            db.session.delete(pending)
+            db.session.commit()
+            return None, 'Verification session expired. Please sign up again.'
 
         verification = EmailVerification.query.filter_by(
             pending_user_id=pending.id
@@ -155,35 +160,58 @@ class UserService:
     def get_worker_count():
         return User.query.filter_by(is_verified=True, is_worker=True).count()
 
-    # Profile image helpers
+    # ==================== PROFILE IMAGE HELPERS ====================
     @staticmethod
-    def save_profile_image(file, user_id, crop_data=None):
-        """Save uploaded image, apply crop if provided, return filename."""
-        if not file:
+    def save_profile_image(file, user_id):
+        """
+        Save an uploaded profile image: convert to JPEG, resize to max 500x500,
+        compress with quality 85. Always saves as user_<id>.jpg.
+        Returns the filename if successful, otherwise None.
+        Raises ValueError for invalid file type.
+        """
+        if not file or file.filename == '':
             return None
-        ext = file.filename.rsplit('.', 1)[1].lower()
-        filename = f"user_{user_id}_{secure_filename(file.filename)}"
-        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
 
-        if crop_data:
-            # Crop using Pillow
-            im = Image.open(filepath)
-            x, y, scale = crop_data['x'], crop_data['y'], crop_data['scale']
-            # Simple crop: assume square crop from center
-            width, height = im.size
-            left = max(0, x)
-            top = max(0, y)
-            right = min(width, left + scale)
-            bottom = min(height, top + scale)
-            im = im.crop((left, top, right, bottom))
-            im.save(filepath)
+        allowed_extensions = {'png', 'jpg', 'jpeg'}
+        ext = file.filename.rsplit('.', 1)[1].lower()
+
+        if ext not in allowed_extensions:
+            raise ValueError("Invalid file type. Only PNG, JPG, JPEG allowed.")
+
+        # Always save as .jpg
+        filename = f"user_{user_id}.jpg"
+        folder = current_app.config['UPLOAD_FOLDER']
+        filepath = os.path.join(folder, filename)
+
+        # Open, convert to RGB, resize, and save as JPEG
+        try:
+            img = Image.open(file)
+            img = img.convert('RGB')
+            img.thumbnail((500, 500), Image.Resampling.LANCZOS)
+            img.save(filepath, format='JPEG', quality=85, optimize=True)
+        except Exception as e:
+            current_app.logger.error(f"Image processing failed: {e}")
+            raise IOError("Failed to process image.")
+
+        if not os.path.exists(filepath):
+            raise IOError("Failed to save image file.")
 
         return filename
 
     @staticmethod
     def delete_old_profile_image(user):
-        if user.profile_image:
+        """Delete old profile image if it exists and is not the default."""
+        if user.profile_image and user.profile_image != 'default_profile.png':
             path = os.path.join(current_app.config['UPLOAD_FOLDER'], user.profile_image)
             if os.path.exists(path):
                 os.remove(path)
+
+    @staticmethod
+    def cleanup_expired_pending_users(minutes=15):
+        """Delete pending users older than given minutes."""
+        cutoff = datetime.utcnow() - timedelta(minutes=minutes)
+        expired = PendingUser.query.filter(PendingUser.created_at < cutoff).all()
+        for p in expired:
+            db.session.delete(p)
+        db.session.commit()
+        return len(expired)

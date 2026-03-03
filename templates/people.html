@@ -30,7 +30,7 @@
     <div class="col-md-6 col-lg-4 mb-4">
         <div class="notebook-card p-3 h-100 {% if user.is_worker %}card-color-5{% endif %}">
             <div class="d-flex align-items-center mb-2">
-                <img src="{{ url_for('static', filename='uploads/profile_images/' + (user.profile_image or 'default_profile.png')) }}" 
+                <img src="{{ url_for('static', filename='uploads/profile_images/' + (user.profile_image or 'default_profile.png')) }}"
                      class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                 <h3 class="notebook-heading h4 mb-0">{{ user.full_name }}</h3>
             </div>
@@ -38,11 +38,11 @@
             <p class="mb-1">{{ user.college_name }}</p>
             <p class="mb-1">{{ user.year }} • {{ user.class_name }} • Section {{ user.section }}</p>
             {% if user.is_worker and user.skills %}
-                <div class="mt-2">
-                    <span class="notebook-worker-badge">Services Provided</span>
-                    <div class="mt-2">
+                <div class="mt-2 skill-popout-container">
+                    <span class="notebook-worker-badge" data-skills="{{ user.skills }}">Services Provided</span>
+                    <div class="skill-popout">
                         {% for skill in user.skills.split(',') %}
-                            <span class="notebook-skill-tag">{{ skill.strip() }}</span>
+                            <span class="skill-tag">{{ skill.strip() }}</span>
                         {% endfor %}
                     </div>
                 </div>
@@ -56,4 +56,38 @@
     </div>
     {% endfor %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Skill popout for people page
+    const containers = document.querySelectorAll('.skill-popout-container');
+    containers.forEach(container => {
+        const badge = container.querySelector('.notebook-worker-badge');
+        const popout = container.querySelector('.skill-popout');
+
+        if (!badge || !popout) return;
+
+        // Desktop: hover
+        badge.addEventListener('mouseenter', () => {
+            popout.classList.add('show');
+        });
+        container.addEventListener('mouseleave', () => {
+            popout.classList.remove('show');
+        });
+
+        // Mobile: tap toggle
+        badge.addEventListener('click', (e) => {
+            e.preventDefault();
+            popout.classList.toggle('show');
+        });
+
+        // Hide popout when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (!container.contains(e.target)) {
+                popout.classList.remove('show');
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

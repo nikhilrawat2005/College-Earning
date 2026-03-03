@@ -18,7 +18,7 @@
                 {% for msg in messages %}
                     <div class="mb-2 d-flex {% if msg.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %}">
                         {% if msg.sender_id != current_user.id %}
-                            <img src="{{ url_for('static', filename='uploads/profile_images/' + (other_user.profile_image or 'default_profile.png')) }}" 
+                            <img src="{{ url_for('static', filename='uploads/profile_images/' + (other_user.profile_image or 'default_profile.png')) }}"
                                  class="rounded-circle me-2 align-self-end" style="width: 30px; height: 30px; object-fit: cover;">
                         {% endif %}
                         <div class="d-inline-block p-2 rounded" style="max-width: 70%; {% if msg.sender_id == current_user.id %}background-color: var(--pastel-sky);{% else %}background-color: var(--pastel-mint);{% endif %} border: 2px solid black; border-radius: 20px 5px 20px 5px;">
@@ -26,7 +26,7 @@
                             <small class="text-muted d-block">{{ msg.timestamp.strftime('%H:%M') }}</small>
                         </div>
                         {% if msg.sender_id == current_user.id %}
-                            <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}" 
+                            <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}"
                                  class="rounded-circle ms-2 align-self-end" style="width: 30px; height: 30px; object-fit: cover;">
                         {% endif %}
                     </div>
@@ -35,7 +35,7 @@
             <div class="mt-3">
                 <form id="message-form" class="input-group">
                     <input type="text" id="message-input" class="notebook-input form-control" placeholder="Type a message..." autocomplete="off">
-                    <button type="submit" class="notebook-btn">Send</button>
+                    <button type="submit" class="notebook-btn" id="send-message-btn">Send</button>
                 </form>
             </div>
         </div>
@@ -49,7 +49,9 @@
     const messageContainer = document.getElementById('message-container');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-message-btn');
     let lastMessageId = {{ messages[-1].id if messages else 0 }};
+    let isSubmitting = false; // flag to prevent double submit
 
     // Scroll to bottom
     function scrollToBottom() {
@@ -61,7 +63,10 @@
     messageForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const message = messageInput.value.trim();
-        if (!message) return;
+        if (!message || isSubmitting) return;
+
+        isSubmitting = true;
+        sendBtn.disabled = true;
 
         const formData = new FormData();
         formData.append('message', message);
@@ -70,7 +75,7 @@
             const response = await fetch(`/chat/send/${conversationId}`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': window.CSRF_TOKEN   // FIXED: added CSRF token
+                    'X-CSRFToken': window.CSRF_TOKEN
                 },
                 body: formData
             });
@@ -84,7 +89,7 @@
                         ${data.message_text}
                         <small class="text-muted d-block">${data.timestamp}</small>
                     </div>
-                    <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}" 
+                    <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}"
                          class="rounded-circle ms-2 align-self-end" style="width: 30px; height: 30px; object-fit: cover;">
                 `;
                 messageContainer.appendChild(msgDiv);
@@ -97,6 +102,9 @@
         } catch (error) {
             console.error('Error sending message:', error);
             alert('An error occurred. Please try again.');
+        } finally {
+            isSubmitting = false;
+            sendBtn.disabled = false;
         }
     });
 

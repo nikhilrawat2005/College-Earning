@@ -18,8 +18,14 @@
             </div>
             <p class="notebook-lead">@{{ profile_user.username }}</p>
             <hr class="notebook-divider">
-            <p><strong>College:</strong> {{ profile_user.college_name }}</p>
-            <p><strong>Year / Class / Section:</strong> {{ profile_user.year }} • {{ profile_user.class_name }} • {{ profile_user.section }}</p>
+            <div class="d-flex align-items-center mb-3">
+                <img src="{{ url_for('static', filename='uploads/profile_images/' + (profile_user.profile_image or 'default_profile.png')) }}"
+                     class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover; border: 3px solid black;">
+                <div>
+                    <p><strong>College:</strong> {{ profile_user.college_name }}</p>
+                    <p><strong>Year / Class / Section:</strong> {{ profile_user.year }} • {{ profile_user.class_name }} • {{ profile_user.section }}</p>
+                </div>
+            </div>
             <p><strong>Phone:</strong> {{ profile_user.phone_number }}</p>
             {% if profile_user.short_bio %}
                 <p><strong>Bio:</strong> {{ profile_user.short_bio }}</p>

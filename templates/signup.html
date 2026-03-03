@@ -6,7 +6,7 @@
     <div class="col-md-10">
         <div class="notebook-card p-4">
             <h2 class="notebook-heading mb-4 text-center">Sign Up</h2>
-            <form method="POST" action="" enctype="multipart/form-data" novalidate id="signupForm">
+            <form method="POST" action="" novalidate id="signupForm">
                 {{ form.hidden_tag() }}
                 
                 <!-- Two-column layout -->
@@ -79,18 +79,7 @@
 
                     <!-- Right column -->
                     <div class="col-md-6">
-                        <!-- Profile Picture with preview -->
-                        <div class="mb-3 text-center">
-                            <label class="notebook-label">Profile Picture</label>
-                            <div class="d-flex flex-column align-items-center">
-                                <img id="profilePreview" src="{{ url_for('static', filename='uploads/profile_images/default_profile.png') }}" 
-                                     class="rounded-circle mb-2" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid black;">
-                                <div>
-                                    {{ form.profile_image(class="notebook-input form-control", id="profile_image", accept="image/*") }}
-                                </div>
-                                <small class="form-text text-muted">Upload a profile picture (optional)</small>
-                            </div>
-                        </div>
+                        <!-- Profile Picture (removed) – users can upload after login -->
 
                         <!-- Year -->
                         <div class="mb-3">

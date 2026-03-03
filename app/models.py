@@ -21,7 +21,7 @@ class User(UserMixin, db.Model):
     assigned_id = db.Column(db.String(50), unique=True)
 
     # Profile image fields
-    profile_image = db.Column(db.String(255), nullable=True)  # filename
+    profile_image = db.Column(db.String(255), nullable=False, default='default_profile.png')
     profile_crop_x = db.Column(db.Float, nullable=True)
     profile_crop_y = db.Column(db.Float, nullable=True)
     profile_crop_scale = db.Column(db.Float, nullable=True)

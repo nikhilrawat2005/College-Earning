@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSection();
     }
 
-    // ===== PROFILE IMAGE PREVIEW =====
+    // ===== PROFILE IMAGE PREVIEW (simple, no crop) =====
     const profileInput = document.getElementById('profile_image');
     const profilePreview = document.getElementById('profilePreview');
     if (profileInput && profilePreview) {
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
                 reader.readAsDataURL(file);
             } else {
-                profilePreview.src = "{{ url_for('static', filename='uploads/profile_images/default_profile.png') }}";
+                profilePreview.src = window.DEFAULT_PROFILE_IMAGE;  // fallback
             }
         });
     }
@@ -142,6 +142,39 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isWorkerCheckbox.checked) {
                 skillsHidden.value = ''; // clear if not worker
             }
+        });
+    }
+
+    // ===== LIVE USERNAME/EMAIL CHECK =====
+    const usernameInput = document.querySelector('input[name="username"]');
+    const emailInput = document.querySelector('input[name="email"]');
+
+    function checkAvailability(field, value, feedbackElement) {
+        if (!value) return;
+        fetch(`/auth/check-availability?field=${field}&value=${encodeURIComponent(value)}`)
+            .then(res => res.json())
+            .then(data => {
+                feedbackElement.textContent = data.message;
+                feedbackElement.style.color = data.available ? 'green' : 'red';
+            })
+            .catch(err => console.error('Availability check failed:', err));
+    }
+
+    if (usernameInput) {
+        const feedback = document.createElement('small');
+        feedback.className = 'form-text';
+        usernameInput.parentNode.appendChild(feedback);
+        usernameInput.addEventListener('blur', () => {
+            checkAvailability('username', usernameInput.value, feedback);
+        });
+    }
+
+    if (emailInput) {
+        const feedback = document.createElement('small');
+        feedback.className = 'form-text';
+        emailInput.parentNode.appendChild(feedback);
+        emailInput.addEventListener('blur', () => {
+            checkAvailability('email', emailInput.value, feedback);
         });
     }
 });

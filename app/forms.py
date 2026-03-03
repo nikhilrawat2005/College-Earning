@@ -33,15 +33,10 @@ class SignupForm(FlaskForm):
     is_worker = BooleanField('I want to offer my skills')
     skills = TextAreaField('Skills (comma separated)', validators=[Optional(), Length(max=500)])
 
-    # Profile image field
-    profile_image = FileField('Profile Picture (optional)', validators=[
-        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only!'),
-        FileSize(max_size=5 * 1024 * 1024)  # 5MB limit
-    ])
+    # Profile image field removed – users can upload after login
 
     def validate_section(form, field):
         branch = form.class_name.data
-        # FIXED: Include all CSE variants
         if branch in ['CSE', 'CSE (AIML)', 'CSE (DS)']:
             allowed = [str(i) for i in range(11, 29)]
         else:
@@ -92,12 +87,11 @@ class EditProfileForm(FlaskForm):
     profile_image = FileField('Profile Picture', validators=[
         Optional(),
         FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only!'),
-        FileSize(max_size=5 * 1024 * 1024)
+        FileSize(max_size=10 * 1024 * 1024)
     ])
 
     def validate_section(form, field):
         branch = form.class_name.data
-        # FIXED: Include all CSE variants
         if branch in ['CSE', 'CSE (AIML)', 'CSE (DS)']:
             allowed = [str(i) for i in range(11, 29)]
         else:

@@ -1,12 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, abort
 from flask_login import login_required, current_user
-from werkzeug.utils import secure_filename
 import os
-import re
 
 from app.models import User
 from app.user_service import UserService
-from app.extensions import db, csrf
+from app.extensions import db
 from app.services.skill_service import SkillService
 from app.forms import EditProfileForm
 from app.data.services_data import ALL_SKILLS
@@ -44,7 +42,6 @@ def dashboard():
 @main_bp.route('/dashboard/services')
 @login_required
 def dashboard_services():
-    # List of pastel CSS classes defined in style.css
     pastel_classes = [
         'category-pastel-1', 'category-pastel-2', 'category-pastel-3',
         'category-pastel-4', 'category-pastel-5', 'category-pastel-6',
@@ -116,7 +113,7 @@ def profile(username):
 
 
 # =====================================================
-# EDIT PROFILE (GET + POST)
+# EDIT PROFILE (GET + POST) – with image handling
 # =====================================================
 @main_bp.route('/edit-profile', methods=['GET', 'POST'])
 @login_required
@@ -133,11 +130,32 @@ def edit_profile():
         current_user.phone_number = form.phone_number.data
         current_user.short_bio = form.short_bio.data
         current_user.is_worker = form.is_worker.data
-        # Skills are handled via hidden field; form.skills.data already updated by JS
         current_user.skills = form.skills.data
 
-        # Profile image is uploaded separately via /upload-profile-image, so we don't handle here
-        db.session.commit()
+        # Handle profile image upload
+        if form.profile_image.data:
+            old_image = current_user.profile_image
+            try:
+                filename = UserService.save_profile_image(form.profile_image.data, current_user.id)
+                if filename:
+                    current_user.profile_image = filename
+                    db.session.commit()  # commit before deleting old
+
+                    # Delete old image only after successful commit
+                    if old_image and old_image != 'default_profile.png':
+                        old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], old_image)
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                else:
+                    flash('Failed to upload image.', 'danger')
+            except ValueError as e:
+                flash(str(e), 'danger')
+            except Exception as e:
+                current_app.logger.error(f"Image upload error: {e}")
+                flash('An error occurred while uploading the image.', 'danger')
+        else:
+            db.session.commit()
+
         flash('Profile updated successfully.', 'success')
         return redirect(url_for('main.profile', username=current_user.username))
 
@@ -149,59 +167,42 @@ def edit_profile():
 
 
 # =====================================================
-# CROP IMAGE UPLOAD (AJAX)
+# (Deprecated) Old AJAX upload endpoint – now returns 410
 # =====================================================
 @main_bp.route('/upload-profile-image', methods=['POST'])
 @login_required
 def upload_profile_image():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-
-    # Validate file type (allow only images)
-    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-    if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
-        return jsonify({'error': 'Invalid file type'}), 400
-
-    # Delete old image if exists
-    UserService.delete_old_profile_image(current_user)
-
-    # Save new image
-    filename = f"user_{current_user.id}_{secure_filename(file.filename)}"
-    filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-    file.save(filepath)
-
-    # Update user's profile_image field
-    current_user.profile_image = filename
-    db.session.commit()
-
-    return jsonify({'filename': filename})
+    return jsonify({'error': 'This endpoint is deprecated. Use edit profile form.'}), 410
 
 
 # =====================================================
-# SERVICE USERS PAGE (NEW)
+# SKILL WORKERS PAGE (Skill Detail)
 # =====================================================
 @main_bp.route('/services/<path:skill_name>')
 @login_required
-def service_users(skill_name):
+def skill_workers(skill_name):
     """Show all verified workers offering a specific skill."""
-    # Convert slug back to skill name (e.g., "video-editing" -> "Video Editing")
-    # Build a mapping from slug to actual skill name using ALL_SKILLS
+    # Convert slug back to skill name
     slug_map = {skill.lower().replace(' ', '-'): skill for skill in ALL_SKILLS}
-    # Also handle slashes or other punctuation if needed
     actual_skill = slug_map.get(skill_name)
 
     if not actual_skill:
         abort(404, description="Skill not found")
 
-    # Query verified workers with this skill
+    description = SkillService.get_description(actual_skill)
+    counts = SkillService.get_skill_counts()
+    worker_count = counts.get(actual_skill, 0)
+
     users = User.query.filter(
         User.is_verified == True,
         User.is_worker == True,
         User.skills.ilike(f'%{actual_skill}%')
     ).all()
 
-    return render_template('service_users.html', skill=actual_skill, users=users)
+    return render_template(
+        'service_detail.html',  # adjust template name as needed
+        skill=actual_skill,
+        description=description,
+        worker_count=worker_count,
+        users=users
+    )
