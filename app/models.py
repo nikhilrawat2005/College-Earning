@@ -26,12 +26,17 @@ class User(UserMixin, db.Model):
     profile_crop_y = db.Column(db.Float, nullable=True)
     profile_crop_scale = db.Column(db.Float, nullable=True)
 
+    # Relationships for hire requests
+    sent_hire_requests = db.relationship('HireRequest', foreign_keys='HireRequest.sender_id', backref='sender', lazy='dynamic')
+    received_hire_requests = db.relationship('HireRequest', foreign_keys='HireRequest.worker_id', backref='worker', lazy='dynamic')
+
     __table_args__ = (
         db.Index('idx_user_username', 'username'),
         db.Index('idx_user_email', 'email'),
         db.Index('idx_user_full_name', 'full_name'),
         db.Index('idx_user_college_name', 'college_name'),
     )
+
 
 class PendingUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,6 +72,7 @@ class PendingUser(db.Model):
             is_verified=True
         )
 
+
 class EmailVerification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pending_user_id = db.Column(db.Integer, db.ForeignKey('pending_user.id'), nullable=False)
@@ -82,3 +88,42 @@ class EmailVerification(db.Model):
 
     def is_expired(self):
         return datetime.utcnow() > self.expires_at
+
+
+class HireRequest(db.Model):
+    __tablename__ = 'hire_requests'
+
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    worker_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversations.id'), nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, accepted, rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    responded_at = db.Column(db.DateTime, nullable=True)
+    work_title = db.Column(db.String(200), nullable=True)
+    work_description = db.Column(db.Text, nullable=True)
+    active = db.Column(db.Boolean, default=True)
+
+    # New fields for improved record workflow
+    start_date = db.Column(db.Date, nullable=True)
+    end_date = db.Column(db.Date, nullable=True)
+    record_created = db.Column(db.Boolean, default=False)
+
+    # Relationships
+    conversation = db.relationship('Conversation', backref='hire_requests')
+
+    __table_args__ = (
+        db.Index('idx_hire_sender', 'sender_id'),
+        db.Index('idx_hire_worker', 'worker_id'),
+        db.Index('idx_hire_conversation', 'conversation_id'),
+        db.Index('idx_hire_status', 'status'),
+    )
+
+    @staticmethod
+    def pending_count_for_worker(worker_id):
+        """Return number of pending hire requests for a given worker."""
+        return HireRequest.query.filter_by(
+            worker_id=worker_id,
+            status='pending',
+            active=True
+        ).count()

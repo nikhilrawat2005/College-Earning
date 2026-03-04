@@ -1,9 +1,11 @@
-from flask import Flask, render_template, flash, redirect, request, jsonify
+from flask import Flask, render_template, flash, redirect, request, jsonify, url_for
 from config import Config
 from app.extensions import db, mail, login_manager, limiter, migrate, csrf
 from app.services.skill_service import SkillService
 from werkzeug.exceptions import RequestEntityTooLarge
+from flask_wtf.csrf import CSRFError
 import os
+from app.models import HireRequest
 
 
 def create_app(config_class=Config):
@@ -65,7 +67,7 @@ def create_app(config_class=Config):
     app.register_blueprint(notifications_bp)
 
     # ===============================
-    # Context Processor for Unread Messages
+    # Context Processors
     # ===============================
     @app.context_processor
     def inject_unread_count():
@@ -75,6 +77,15 @@ def create_app(config_class=Config):
             count = ChatService.get_unread_count(current_user.id)
             return {'unread_messages_count': count}
         return {'unread_messages_count': 0}
+
+    # NEW: inject pending hire requests count for workers
+    @app.context_processor
+    def inject_pending_requests_count():
+        from flask_login import current_user
+        if current_user.is_authenticated and current_user.is_worker:
+            count = HireRequest.pending_count_for_worker(current_user.id)
+            return {'pending_requests_count': count}
+        return {'pending_requests_count': 0}
 
     # ===============================
     # Jinja Filter
@@ -97,11 +108,18 @@ def create_app(config_class=Config):
 
     @app.errorhandler(RequestEntityTooLarge)
     def handle_large_file(e):
-        # Check if request is AJAX
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'error': 'File too large. Maximum size is 10MB.'}), 413
         flash("Profile image must be under 10MB.", "danger")
         return redirect(request.url)
+
+    # NEW: CSRF error handler for AJAX requests
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': 'CSRF token missing or invalid'}), 403
+        flash('CSRF token missing or invalid', 'danger')
+        return redirect(request.url or url_for('main.landing'))
 
     # ===============================
     # ✅ AUTO CREATE DATABASE TABLES (development only)

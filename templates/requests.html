@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Hire Requests{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="notebook-heading mb-4">Hire Requests</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        {% if requests %}
+            {% for req in requests %}
+                <div class="notebook-card p-3 mb-3" id="request-{{ req.id }}">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='uploads/profile_images/' + (req.sender.profile_image or 'default_profile.png')) }}"
+                             class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                        <div class="flex-grow-1">
+                            <h3 class="h5 mb-1">
+                                <a href="{{ url_for('main.profile', username=req.sender.username) }}" class="notebook-link">
+                                    {{ req.sender.full_name }}
+                                </a>
+                            </h3>
+                            <p class="mb-0 text-muted small">Requested on {{ req.created_at.strftime('%b %d, %Y') }}</p>
+                        </div>
+                        <div>
+                            <button class="notebook-btn accept-btn me-2" data-request-id="{{ req.id }}">Accept</button>
+                            <button class="notebook-btn reject-btn" data-request-id="{{ req.id }}">Reject</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="notebook-lead">No pending hire requests.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const acceptButtons = document.querySelectorAll('.accept-btn');
+        const rejectButtons = document.querySelectorAll('.reject-btn');
+
+        acceptButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const requestId = this.dataset.requestId;
+                fetch(`/chat/hire/accept/${requestId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': window.CSRF_TOKEN,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`request-${requestId}`).remove();
+                        alert('Request accepted!');
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(err => console.error(err));
+            });
+        });
+
+        rejectButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const requestId = this.dataset.requestId;
+                fetch(`/chat/hire/reject/${requestId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': window.CSRF_TOKEN,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`request-${requestId}`).remove();
+                        alert('Request rejected.');
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(err => console.error(err));
+            });
+        });
+    });
+</script>
+{% endblock %}

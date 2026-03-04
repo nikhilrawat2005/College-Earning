@@ -41,9 +41,11 @@
                 <div class="mt-2 skill-popout-container">
                     <span class="notebook-worker-badge" data-skills="{{ user.skills }}">Services Provided</span>
                     <div class="skill-popout">
-                        {% for skill in user.skills.split(',') %}
-                            <span class="skill-tag">{{ skill.strip() }}</span>
-                        {% endfor %}
+                        <div class="skill-tags">
+                            {% for skill in user.skills.split(',') %}
+                                <span class="skill-tag">{{ skill.strip() }}</span>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             {% endif %}

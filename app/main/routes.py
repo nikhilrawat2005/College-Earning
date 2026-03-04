@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 import os
 
-from app.models import User
+from app.models import User, HireRequest
 from app.user_service import UserService
 from app.extensions import db
 from app.services.skill_service import SkillService
@@ -19,7 +19,6 @@ main_bp = Blueprint('main', __name__)
 def landing():
     total_users = UserService.get_user_count()
     total_workers = UserService.get_worker_count()
-
     return render_template(
         'landing.html',
         total_users=total_users,
@@ -69,22 +68,16 @@ def dashboard_tutorials():
 @main_bp.route('/people')
 @login_required
 def people():
-
     query = request.args.get('q', '')
-
     users_query = User.query.filter(User.is_verified == True)
-
     if query:
         users_query = users_query.filter(
             User.full_name.ilike(f"%{query}%") |
             User.college_name.ilike(f"%{query}%")
         )
-
     users = users_query.all()
-
     total_users = UserService.get_user_count()
     total_workers = UserService.get_worker_count()
-
     return render_template(
         'people.html',
         users=users,
@@ -100,12 +93,10 @@ def people():
 @main_bp.route('/profile/<username>')
 @login_required
 def profile(username):
-
     profile_user = User.query.filter_by(
         username=username,
         is_verified=True
     ).first_or_404()
-
     return render_template(
         'profile.html',
         profile_user=profile_user
@@ -119,9 +110,7 @@ def profile(username):
 @login_required
 def edit_profile():
     form = EditProfileForm(obj=current_user)
-
     if form.validate_on_submit():
-        # Update user fields
         current_user.full_name = form.full_name.data
         current_user.college_name = form.college_name.data
         current_user.year = form.year.data
@@ -132,16 +121,13 @@ def edit_profile():
         current_user.is_worker = form.is_worker.data
         current_user.skills = form.skills.data
 
-        # Handle profile image upload
         if form.profile_image.data:
             old_image = current_user.profile_image
             try:
                 filename = UserService.save_profile_image(form.profile_image.data, current_user.id)
                 if filename:
                     current_user.profile_image = filename
-                    db.session.commit()  # commit before deleting old
-
-                    # Delete old image only after successful commit
+                    db.session.commit()
                     if old_image and old_image != 'default_profile.png':
                         old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], old_image)
                         if os.path.exists(old_path):
@@ -181,28 +167,39 @@ def upload_profile_image():
 @main_bp.route('/services/<path:skill_name>')
 @login_required
 def skill_workers(skill_name):
-    """Show all verified workers offering a specific skill."""
-    # Convert slug back to skill name
     slug_map = {skill.lower().replace(' ', '-'): skill for skill in ALL_SKILLS}
     actual_skill = slug_map.get(skill_name)
-
     if not actual_skill:
         abort(404, description="Skill not found")
-
     description = SkillService.get_description(actual_skill)
     counts = SkillService.get_skill_counts()
     worker_count = counts.get(actual_skill, 0)
-
     users = User.query.filter(
         User.is_verified == True,
         User.is_worker == True,
         User.skills.ilike(f'%{actual_skill}%')
     ).all()
-
     return render_template(
-        'service_detail.html',  # adjust template name as needed
+        'service_detail.html',
         skill=actual_skill,
         description=description,
         worker_count=worker_count,
         users=users
     )
+
+
+# =====================================================
+# HIRE REQUESTS PAGE (for workers)
+# =====================================================
+@main_bp.route('/requests')
+@login_required
+def requests():
+    if not current_user.is_worker:
+        flash('Only workers can view requests.', 'warning')
+        return redirect(url_for('main.dashboard'))
+    pending_requests = HireRequest.query.filter_by(
+        worker_id=current_user.id,
+        status='pending',
+        active=True
+    ).order_by(HireRequest.created_at.desc()).all()
+    return render_template('requests.html', requests=pending_requests)

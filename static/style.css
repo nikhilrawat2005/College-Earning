@@ -903,3 +903,58 @@ body::before {
     max-width: none;
     flex: none;
 }
+
+/* Hire button states */
+.hire-default {
+    background-color: #28a745 !important; /* bright green */
+    border-color: black !important;
+    color: black !important;
+}
+.hire-default:hover {
+    background-color: #218838 !important;
+}
+.hire-pending {
+    background-color: #ffc107 !important; /* yellow */
+    border-color: black !important;
+    color: black !important;
+    cursor: not-allowed;
+}
+.hire-accepted {
+    background-color: #006400 !important; /* dark green */
+    border-color: black !important;
+    color: white !important;
+    cursor: default;
+}
+.hire-rejected {
+    background-color: #dc3545 !important; /* red */
+    border-color: black !important;
+    color: white !important;
+    cursor: default;
+}
+/* Hire button states */
+.hire-default {
+    background-color: #28a745 !important; /* bright green */
+    border-color: black !important;
+    color: black !important;
+}
+.hire-default:hover {
+    background-color: #218838 !important;
+}
+.hire-pending {
+    background-color: #ffc107 !important; /* yellow */
+    border-color: black !important;
+    color: black !important;
+    cursor: not-allowed;
+}
+.hire-accepted {
+    background-color: #006400 !important; /* dark green */
+    border-color: black !important;
+    color: white !important;
+    cursor: default;
+}
+.hire-rejected {
+    background-color: #dc3545 !important; /* red */
+    border-color: black !important;
+    color: white !important;
+    cursor: default;
+}

@@ -102,24 +102,28 @@
             padding: 0.5rem 1rem;
             box-shadow: 5px 5px 0 rgba(0,0,0,0.1);
             z-index: 1000;
-            white-space: nowrap;
+            max-width: 300px;   /* Limit width to prevent overflow */
             margin-top: 5px;
         }
         .skill-popout.show {
             display: block;
         }
+        .skill-popout .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
         .skill-popout .skill-tag {
             display: inline-block;
-            margin-right: 5px;
             background: var(--pastel-yellow);
             border: 2px solid black;
             border-radius: 30px 5px 30px 5px;
             padding: 0.2rem 0.8rem;
             font-size: 0.9rem;
+            white-space: nowrap;
         }
         @media (max-width: 768px) {
             .skill-popout {
-                white-space: normal;
                 max-width: 200px;
             }
         }
@@ -146,6 +150,14 @@
                             <span class="badge bg-danger ms-1">{{ unread_messages_count }}</span>
                         {% endif %}
                     </a>
+                    {% if current_user.is_worker %}
+                        <a href="{{ url_for('main.requests') }}" class="notebook-link">
+                            Requests
+                            {% if pending_requests_count > 0 %}
+                                <span class="badge bg-danger ms-1">{{ pending_requests_count }}</span>
+                            {% endif %}
+                        </a>
+                    {% endif %}
                     <!-- Profile Dropdown -->
                     <div class="dropdown">
                         <img src="{{ url_for('static', filename='uploads/profile_images/' + (current_user.profile_image or 'default_profile.png')) }}"

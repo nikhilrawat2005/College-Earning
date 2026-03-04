@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Chat with {{ other_user.full_name }}{% endblock %}
 {% block content %}
-<div class="row">
+<div class="row mt-4">   <!-- Added mt-4 for top spacing -->
     <div class="col-12">
         <h1 class="notebook-heading mb-4">
             Chat with 
             <a href="{{ url_for('main.profile', username=other_user.username) }}" class="notebook-link">
                 {{ other_user.full_name }}
             </a>
+            <!-- Record button appears when hire request accepted and record created -->
+            <button id="record-work-btn" class="notebook-btn float-end" style="display: none;">Record</button>
         </h1>
     </div>
 </div>
@@ -32,6 +34,12 @@
                     </div>
                 {% endfor %}
             </div>
+            <!-- Hire button (if partner is worker) -->
+            {% if other_user.is_worker %}
+                <div class="mb-2 text-center">
+                    <button id="hire-btn" class="notebook-btn hire-default" data-conversation-id="{{ conversation.id }}">Hire Worker</button>
+                </div>
+            {% endif %}
             <div class="mt-3">
                 <form id="message-form" class="input-group">
                     <input type="text" id="message-input" class="notebook-input form-control" placeholder="Type a message..." autocomplete="off">
@@ -41,25 +49,86 @@
         </div>
     </div>
 </div>
+
+<!-- Record Work Modal (for creating the record) -->
+<div class="modal fade" id="recordModal" tabindex="-1" aria-labelledby="recordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content notebook-card">
+            <div class="modal-header">
+                <h5 class="modal-title notebook-heading" id="recordModalLabel">Create Work Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="record-form">
+                    <div class="mb-3">
+                        <label for="work-title" class="notebook-label">Work Title / Task Name</label>
+                        <input type="text" class="notebook-input form-control" id="work-title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start-date" class="notebook-label">Start Date</label>
+                        <input type="date" class="notebook-input form-control" id="start-date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end-date" class="notebook-label">End Date</label>
+                        <input type="date" class="notebook-input form-control" id="end-date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="work-description" class="notebook-label">Description (optional)</label>
+                        <textarea class="notebook-input form-control" id="work-description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="notebook-btn" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="notebook-btn-solid" id="save-record">Save Record</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Record Modal (for viewing saved record) -->
+<div class="modal fade" id="viewRecordModal" tabindex="-1" aria-labelledby="viewRecordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content notebook-card">
+            <div class="modal-header">
+                <h5 class="modal-title notebook-heading" id="viewRecordModalLabel">Work Record Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Task Name:</strong> <span id="view-title"></span></p>
+                <p><strong>Start Date:</strong> <span id="view-start"></span></p>
+                <p><strong>End Date:</strong> <span id="view-end"></span></p>
+                <p><strong>Description:</strong> <span id="view-description"></span></p>
+                <hr>
+                <p><em>Future updates or notes can appear here.</em></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="notebook-btn" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
+
 {% block scripts %}
 {{ super() }}
+<!-- Include hire.js -->
+<script src="{{ url_for('static', filename='js/hire.js') }}"></script>
 <script>
+    // Existing chat polling logic (unchanged)
     const conversationId = {{ conversation.id }};
     const messageContainer = document.getElementById('message-container');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
     const sendBtn = document.getElementById('send-message-btn');
     let lastMessageId = {{ messages[-1].id if messages else 0 }};
-    let isSubmitting = false; // flag to prevent double submit
+    let isSubmitting = false;
 
-    // Scroll to bottom
     function scrollToBottom() {
         messageContainer.scrollTop = messageContainer.scrollHeight;
     }
     scrollToBottom();
 
-    // Send message via AJAX
     messageForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const message = messageInput.value.trim();
@@ -74,14 +143,11 @@
         try {
             const response = await fetch(`/chat/send/${conversationId}`, {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': window.CSRF_TOKEN
-                },
+                headers: { 'X-CSRFToken': window.CSRF_TOKEN },
                 body: formData
             });
             if (response.ok) {
                 const data = await response.json();
-                // Append message to container
                 const msgDiv = document.createElement('div');
                 msgDiv.className = 'mb-2 d-flex justify-content-end';
                 msgDiv.innerHTML = `
@@ -101,14 +167,14 @@
             }
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('An error occurred. Please try again.');
+            alert('An error occurred.');
         } finally {
             isSubmitting = false;
             sendBtn.disabled = false;
         }
     });
 
-    // Poll for new messages every 3 seconds
+    // Poll for new messages
     setInterval(async () => {
         try {
             const response = await fetch(`/chat/${conversationId}/messages?since=${lastMessageId}`);
@@ -117,8 +183,7 @@
                 if (messages.length > 0) {
                     messages.forEach(msg => {
                         const msgDiv = document.createElement('div');
-                        const currentUserId = {{ current_user.id }};
-                        const isSender = msg.sender_id === currentUserId;
+                        const isSender = msg.sender_id === {{ current_user.id }};
                         msgDiv.className = `mb-2 d-flex ${isSender ? 'justify-content-end' : 'justify-content-start'}`;
                         let profileImg = '';
                         if (!isSender) {
